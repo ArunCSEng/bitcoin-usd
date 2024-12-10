@@ -13,10 +13,10 @@
     }
     h1 {
       color: #f7931a;
-      font-size: 2.5rem;
+      font-size: 3rem;
     }
     .price {
-      font-size: 2rem;
+      font-size: 2.5rem;
       color: #333;
       margin: 15px 0;
     }
@@ -24,10 +24,10 @@
       margin: 15px;
     }
     .conversion-container input {
-      font-size: 1.2rem;
-      padding: 5px;
+      font-size: 1.5rem;
+      padding: 10px;
       margin: 5px;
-      width: 150px;
+      width: 200px;
     }
     .challenge-container {
       display: flex;
@@ -41,26 +41,26 @@
     }
     .sudoku-container {
       display: none;
-      margin-top: 15px;
+      margin-top: 20px;
     }
     .sudoku-container table {
       margin: 10px auto;
       border-collapse: collapse;
     }
     .sudoku-container td {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
       border: 1px solid #333;
     }
     .sudoku-container button {
       margin-top: 10px;
-      font-size: 1rem;
-      padding: 5px 10px;
+      font-size: 1.2rem;
+      padding: 8px 15px;
     }
     #timer {
-      font-size: 1.5rem;
+      font-size: 2rem;
       margin-top: 10px;
       color: #333;
     }
@@ -89,7 +89,7 @@
   <script>
     const mazeCanvas = document.getElementById('mazeCanvas');
     const ctx = mazeCanvas.getContext('2d');
-    const mazeSize = 15; // Increased size for better difficulty
+    const mazeSize = 15;
     const cellSize = mazeCanvas.width / mazeSize;
     let maze, player, end, elapsedTime, timerInterval, mazeTimer, solvedEarly;
 
@@ -140,29 +140,39 @@
       ctx.fillRect(end.x * cellSize, end.y * cellSize, cellSize, cellSize);
     }
 
-    // Solve maze automatically
-    function solveMaze() {
-      player.x = end.x;
-      player.y = end.y;
-      drawMaze();
-    }
-
-    // Input Conversion Logic
-    document.getElementById('btcInput').addEventListener('input', (e) => {
-      const btcValue = parseFloat(e.target.value);
-      if (!isNaN(btcValue) && btcToUsdPrice) {
-        document.getElementById('usdInput').value = (btcValue * btcToUsdPrice).toFixed(2);
+    // Handle movement
+    document.addEventListener('keydown', (e) => {
+      if (solvedEarly) return;
+      const moves = {
+        ArrowUp: { x: 0, y: -1 },
+        ArrowDown: { x: 0, y: 1 },
+        ArrowLeft: { x: -1, y: 0 },
+        ArrowRight: { x: 1, y: 0 },
+      };
+      const move = moves[e.key];
+      if (move) {
+        const newX = player.x + move.x;
+        const newY = player.y + move.y;
+        if (
+          newX >= 0 &&
+          newX < mazeSize &&
+          newY >= 0 &&
+          newY < mazeSize &&
+          maze[newY][newX] === 0
+        ) {
+          player.x = newX;
+          player.y = newY;
+          drawMaze();
+          if (player.x === end.x && player.y === end.y) {
+            solvedEarly = true;
+            clearInterval(mazeTimer);
+            showSudoku();
+          }
+        }
       }
     });
 
-    document.getElementById('usdInput').addEventListener('input', (e) => {
-      const usdValue = parseFloat(e.target.value);
-      if (!isNaN(usdValue) && btcToUsdPrice) {
-        document.getElementById('btcInput').value = (usdValue / btcToUsdPrice).toFixed(8);
-      }
-    });
-
-    // Show Sudoku
+    // Sudoku
     function showSudoku() {
       document.getElementById('mazeCanvas').style.display = 'none';
       document.getElementById('sudoku').style.display = 'block';
@@ -172,12 +182,6 @@
         [5, 3, 0, 0, 7, 0, 0, 0, 0],
         [6, 0, 0, 1, 9, 5, 0, 0, 0],
         [0, 9, 8, 0, 0, 0, 0, 6, 0],
-        [8, 0, 0, 0, 6, 0, 0, 0, 3],
-        [4, 0, 0, 8, 0, 3, 0, 0, 1],
-        [7, 0, 0, 0, 2, 0, 0, 0, 6],
-        [0, 6, 0, 0, 0, 0, 2, 8, 0],
-        [0, 0, 0, 4, 1, 9, 0, 0, 5],
-        [0, 0, 0, 0, 8, 0, 0, 7, 9],
       ];
       sudoku.forEach(row => {
         const tr = document.createElement('tr');
@@ -190,7 +194,6 @@
       });
     }
 
-    // Teach Button
     document.getElementById('teachBtn').addEventListener('click', () => {
       alert('Auto-solving the Sudoku...');
     });
