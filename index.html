@@ -266,20 +266,14 @@
     function showSudoku() {
       mazeCanvas.style.display = 'none';
       sudokuContainer.style.display = 'block';
-      generateSudoku();
+      generateRandomSudoku();
     }
 
-    function generateSudoku() {
-      sudokuPuzzle = [
-        [5, 3, 0, 0, 7, 0, 0, 0, 0],
-        [6, 0, 0, 1, 9, 5, 0, 0, 0],
-        [0, 9, 8, 0, 0, 0, 0, 6, 0],
-      ];
-      sudokuSolution = [
-        [5, 3, 4, 6, 7, 8, 9, 1, 2],
-        [6, 7, 2, 1, 9, 5, 3, 4, 8],
-        [1, 9, 8, 3, 4, 2, 5, 6, 7],
-      ];
+    function generateRandomSudoku() {
+      sudokuPuzzle = Array.from({ length: 3 }, () =>
+        Array.from({ length: 9 }, () => (Math.random() > 0.5 ? Math.floor(Math.random() * 9) + 1 : 0))
+      );
+      sudokuSolution = sudokuPuzzle.map((row) => row.map((cell) => (cell === 0 ? Math.floor(Math.random() * 9) + 1 : cell)));
       renderSudoku();
     }
 
