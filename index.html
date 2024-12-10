@@ -218,6 +218,7 @@
 
     document.getElementById('btcToUsd').innerText = `1 Bitcoin = $${btcToUsd.toLocaleString()} USD`;
     document.getElementById('usdToBtc').innerText = `1 USD = ${usdToBtc.toFixed(8)} BTC`;
+    initializeMaze();
   } catch (error) {
     document.getElementById('btcToUsd').innerText = 'Error fetching BTC to USD price.';
     document.getElementById('usdToBtc').innerText = 'Error fetching USD to BTC price.';
