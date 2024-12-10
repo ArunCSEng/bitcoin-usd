@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitcoin to USD and Maze Challenge</title>
+  <title>Bitcoin to USD with Maze and Sudoku Challenge</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,53 +19,73 @@
       color: #333;
       margin: 10px 0;
     }
-    .maze-container {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: 20px auto;
-      border: 2px solid #333;
+    .challenge-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
     }
     canvas {
       border: 2px solid #000;
       background: #fff;
     }
+    .sudoku-container {
+      display: none;
+    }
+    .sudoku-table {
+      margin: 10px auto;
+      border-collapse: collapse;
+    }
+    .sudoku-table td {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      border: 1px solid #333;
+    }
     #timer {
       font-size: 1.2rem;
       margin-top: 10px;
-      color: #ff3333;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Bitcoin and USD Converter with Maze Challenge</h1>
+  <h1>Bitcoin and USD Converter with Maze and Sudoku</h1>
   <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
   <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
 
-  <div id="timer">Time Remaining: 50 seconds</div>
-  <div class="maze-container">
+  <div id="timer">Elapsed Time: 0 seconds</div>
+  <div class="challenge-container">
     <canvas id="mazeCanvas" width="300" height="300"></canvas>
+    <div id="sudoku" class="sudoku-container">
+      <h2>Solve This Sudoku!</h2>
+      <table id="sudokuTable" class="sudoku-table"></table>
+    </div>
   </div>
 
   <script>
     const mazeCanvas = document.getElementById('mazeCanvas');
     const ctx = mazeCanvas.getContext('2d');
-    const mazeSize = 10; // 10x10 maze
+    const mazeSize = 10;
     const cellSize = mazeCanvas.width / mazeSize;
-    let maze, player, end, timeRemaining, mazeInterval;
+    let maze, player, end, elapsedTime, timerInterval, mazeTimer, solvedEarly;
 
-    // Maze generator
+    // Guaranteed solvable maze generator
     function generateMaze(size) {
-      const maze = Array(size).fill(null).map(() => Array(size).fill(0));
-      // Randomly generate walls
-      for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-          maze[i][j] = Math.random() > 0.3 ? 0 : 1; // 70% path, 30% wall
-        }
+      const maze = Array(size).fill(null).map(() => Array(size).fill(1));
+      let x = 0, y = 0;
+      maze[y][x] = 0;
+      while (x !== size - 1 || y !== size - 1) {
+        const directions = [];
+        if (x > 0) directions.push([-1, 0]);
+        if (x < size - 1) directions.push([1, 0]);
+        if (y > 0) directions.push([0, -1]);
+        if (y < size - 1) directions.push([0, 1]);
+        const [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
+        x += dx;
+        y += dy;
+        maze[y][x] = 0;
       }
-      // Ensure start and end points are open
-      maze[0][0] = 0;
-      maze[size - 1][size - 1] = 0;
       return maze;
     }
 
@@ -95,8 +115,9 @@
       drawMaze();
     }
 
-    // Handle key presses for player movement
+    // Handle player movement
     document.addEventListener('keydown', (e) => {
+      if (solvedEarly) return;
       const moves = {
         ArrowUp: { x: 0, y: -1 },
         ArrowDown: { x: 0, y: 1 },
@@ -118,25 +139,51 @@
           player.y = newY;
           drawMaze();
           if (player.x === end.x && player.y === end.y) {
-            clearInterval(mazeInterval);
-            alert('You solved the maze!');
+            solvedEarly = true;
+            clearInterval(mazeTimer);
+            showSudoku();
           }
         }
       }
     });
 
-    // Countdown timer
+    // Sudoku challenge
+    function showSudoku() {
+      document.getElementById('mazeCanvas').style.display = 'none';
+      document.getElementById('sudoku').style.display = 'block';
+      const sudokuTable = document.getElementById('sudokuTable');
+      sudokuTable.innerHTML = '';
+      const sudoku = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9],
+      ];
+      sudoku.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.innerText = cell === 0 ? '' : cell;
+          tr.appendChild(td);
+        });
+        sudokuTable.appendChild(tr);
+      });
+    }
+
+    // Timer
     function startTimer() {
-      timeRemaining = 50;
+      elapsedTime = 0;
+      solvedEarly = false;
       const timerElement = document.getElementById('timer');
-      mazeInterval = setInterval(() => {
-        timeRemaining--;
-        timerElement.innerText = `Time Remaining: ${timeRemaining} seconds`;
-        if (timeRemaining <= 0) {
-          clearInterval(mazeInterval);
-          timerElement.innerText = 'Time is up! Solving maze...';
-          solveMaze();
-        }
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        elapsedTime++;
+        timerElement.innerText = `Elapsed Time: ${elapsedTime} seconds`;
       }, 1000);
     }
 
@@ -147,6 +194,9 @@
       end = { x: mazeSize - 1, y: mazeSize - 1 };
       drawMaze();
       startTimer();
+      mazeTimer = setTimeout(() => {
+        if (!solvedEarly) solveMaze();
+      }, 58000);
     }
 
     // Fetch Bitcoin price and refresh maze
