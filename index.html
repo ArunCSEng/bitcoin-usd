@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitcoin to USD and USD to Bitcoin</title>
+  <title>Bitcoin to USD and Maze Challenge</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin-top: 10%;
+      margin: 20px;
       background-color: #f7f7f7;
     }
     h1 {
@@ -19,55 +19,137 @@
       color: #333;
       margin: 10px 0;
     }
-    .hourglass-container {
+    .maze-container {
       position: relative;
-      width: 100px;
-      height: 150px;
+      width: 300px;
+      height: 300px;
       margin: 20px auto;
-      perspective: 500px;
+      border: 2px solid #333;
     }
-    .hourglass {
-      position: relative;
-      width: 100px;
-      height: 150px;
-      background: linear-gradient(to bottom, #f7931a 50%, #f7f7f7 50%);
-      border: 3px solid #333;
-      border-radius: 10px;
-      transform-origin: center;
-      transition: transform 1s ease;
+    canvas {
+      border: 2px solid #000;
+      background: #fff;
     }
-    .hourglass::before,
-    .hourglass::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #f7931a;
-    }
-    .hourglass::before {
-      top: 10%;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-    }
-    .hourglass::after {
-      bottom: 10%;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
+    #timer {
+      font-size: 1.2rem;
+      margin-top: 10px;
+      color: #ff3333;
     }
   </style>
 </head>
 <body>
-  <h1>Bitcoin and USD Converter</h1>
+  <h1>Bitcoin and USD Converter with Maze Challenge</h1>
   <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
   <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
 
-  <div class="hourglass-container">
-    <div class="hourglass" id="hourglass"></div>
+  <div id="timer">Time Remaining: 50 seconds</div>
+  <div class="maze-container">
+    <canvas id="mazeCanvas" width="300" height="300"></canvas>
   </div>
 
   <script>
+    const mazeCanvas = document.getElementById('mazeCanvas');
+    const ctx = mazeCanvas.getContext('2d');
+    const mazeSize = 10; // 10x10 maze
+    const cellSize = mazeCanvas.width / mazeSize;
+    let maze, player, end, timeRemaining, mazeInterval;
+
+    // Maze generator
+    function generateMaze(size) {
+      const maze = Array(size).fill(null).map(() => Array(size).fill(0));
+      // Randomly generate walls
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          maze[i][j] = Math.random() > 0.3 ? 0 : 1; // 70% path, 30% wall
+        }
+      }
+      // Ensure start and end points are open
+      maze[0][0] = 0;
+      maze[size - 1][size - 1] = 0;
+      return maze;
+    }
+
+    // Draw the maze
+    function drawMaze() {
+      ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+      for (let i = 0; i < mazeSize; i++) {
+        for (let j = 0; j < mazeSize; j++) {
+          if (maze[i][j] === 1) {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+          }
+        }
+      }
+      // Draw player
+      ctx.fillStyle = '#f7931a';
+      ctx.fillRect(player.x * cellSize, player.y * cellSize, cellSize, cellSize);
+      // Draw end point
+      ctx.fillStyle = '#33cc33';
+      ctx.fillRect(end.x * cellSize, end.y * cellSize, cellSize, cellSize);
+    }
+
+    // Solve maze automatically
+    function solveMaze() {
+      player.x = end.x;
+      player.y = end.y;
+      drawMaze();
+    }
+
+    // Handle key presses for player movement
+    document.addEventListener('keydown', (e) => {
+      const moves = {
+        ArrowUp: { x: 0, y: -1 },
+        ArrowDown: { x: 0, y: 1 },
+        ArrowLeft: { x: -1, y: 0 },
+        ArrowRight: { x: 1, y: 0 },
+      };
+      const move = moves[e.key];
+      if (move) {
+        const newX = player.x + move.x;
+        const newY = player.y + move.y;
+        if (
+          newX >= 0 &&
+          newX < mazeSize &&
+          newY >= 0 &&
+          newY < mazeSize &&
+          maze[newY][newX] === 0
+        ) {
+          player.x = newX;
+          player.y = newY;
+          drawMaze();
+          if (player.x === end.x && player.y === end.y) {
+            clearInterval(mazeInterval);
+            alert('You solved the maze!');
+          }
+        }
+      }
+    });
+
+    // Countdown timer
+    function startTimer() {
+      timeRemaining = 50;
+      const timerElement = document.getElementById('timer');
+      mazeInterval = setInterval(() => {
+        timeRemaining--;
+        timerElement.innerText = `Time Remaining: ${timeRemaining} seconds`;
+        if (timeRemaining <= 0) {
+          clearInterval(mazeInterval);
+          timerElement.innerText = 'Time is up! Solving maze...';
+          solveMaze();
+        }
+      }, 1000);
+    }
+
+    // Initialize maze
+    function initializeMaze() {
+      maze = generateMaze(mazeSize);
+      player = { x: 0, y: 0 };
+      end = { x: mazeSize - 1, y: mazeSize - 1 };
+      drawMaze();
+      startTimer();
+    }
+
+    // Fetch Bitcoin price and refresh maze
     async function fetchBitcoinPrice() {
       try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
@@ -78,22 +160,15 @@
         document.getElementById('btcToUsd').innerText = `1 Bitcoin = $${btcToUsd.toLocaleString()} USD`;
         document.getElementById('usdToBtc').innerText = `1 USD = ${usdToBtc.toFixed(8)} BTC`;
 
-        // Flip the hourglass
-        flipHourglass();
+        // Refresh the maze
+        initializeMaze();
       } catch (error) {
         document.getElementById('btcToUsd').innerText = 'Error fetching BTC to USD price.';
         document.getElementById('usdToBtc').innerText = 'Error fetching USD to BTC price.';
       }
     }
 
-    function flipHourglass() {
-      const hourglass = document.getElementById('hourglass');
-      hourglass.style.transform = 'rotate(180deg)';
-      setTimeout(() => {
-        hourglass.style.transform = 'rotate(0deg)';
-      }, 500); // Flip back after animation
-    }
-
+    // Initial load
     fetchBitcoinPrice();
 
     // Refresh every 60 seconds
