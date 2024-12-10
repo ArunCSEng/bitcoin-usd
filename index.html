@@ -9,7 +9,7 @@
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 20px;
-      background-color: #f7f7f7;
+      background-color: #ffffff; /* Pure white background */
     }
     h1 {
       color: #f7931a;
@@ -93,6 +93,18 @@
     const cellSize = mazeCanvas.width / mazeSize;
     let maze, player, end, elapsedTime, timerInterval, mazeTimer, solvedEarly;
 
+    // Sudoku data
+    const sudokuPuzzle = [
+      [5, 3, 0, 0, 7, 0, 0, 0, 0],
+      [6, 0, 0, 1, 9, 5, 0, 0, 0],
+      [0, 9, 8, 0, 0, 0, 0, 6, 0],
+    ];
+    const sudokuSolution = [
+      [5, 3, 4, 6, 7, 8, 9, 1, 2],
+      [6, 7, 2, 1, 9, 5, 3, 4, 8],
+      [1, 9, 8, 3, 4, 2, 5, 6, 7],
+    ];
+
     // Enhanced solvable maze generator
     function generateMaze(size) {
       const maze = Array(size).fill(null).map(() => Array(size).fill(1));
@@ -172,20 +184,15 @@
       }
     });
 
-    // Sudoku
+    // Show Sudoku
     function showSudoku() {
       document.getElementById('mazeCanvas').style.display = 'none';
       document.getElementById('sudoku').style.display = 'block';
       const sudokuTable = document.getElementById('sudokuTable');
       sudokuTable.innerHTML = '';
-      const sudoku = [
-        [5, 3, 0, 0, 7, 0, 0, 0, 0],
-        [6, 0, 0, 1, 9, 5, 0, 0, 0],
-        [0, 9, 8, 0, 0, 0, 0, 6, 0],
-      ];
-      sudoku.forEach(row => {
+      sudokuPuzzle.forEach((row, rowIndex) => {
         const tr = document.createElement('tr');
-        row.forEach(cell => {
+        row.forEach((cell, colIndex) => {
           const td = document.createElement('td');
           td.innerText = cell === 0 ? '' : cell;
           tr.appendChild(td);
@@ -194,8 +201,19 @@
       });
     }
 
+    // Teach Button
     document.getElementById('teachBtn').addEventListener('click', () => {
-      alert('Auto-solving the Sudoku...');
+      const sudokuTable = document.getElementById('sudokuTable');
+      sudokuTable.innerHTML = '';
+      sudokuSolution.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.innerText = cell;
+          tr.appendChild(td);
+        });
+        sudokuTable.appendChild(tr);
+      });
     });
 
     // Timer
@@ -207,6 +225,12 @@
       timerInterval = setInterval(() => {
         elapsedTime++;
         timerElement.innerText = `Elapsed Time: ${elapsedTime} seconds`;
+        if (elapsedTime === 59) {
+          clearInterval(timerInterval);
+          document.getElementById('sudoku').style.display = 'none';
+          document.getElementById('mazeCanvas').style.display = 'block';
+          initializeMaze();
+        }
       }, 1000);
     }
 
