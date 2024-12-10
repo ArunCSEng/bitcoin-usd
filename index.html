@@ -8,7 +8,8 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin-top: 20%;
+      margin-top: 10%;
+      background-color: #f7f7f7;
     }
     h1 {
       color: #f7931a;
@@ -18,12 +19,47 @@
       color: #333;
       margin: 10px 0;
     }
+    .sundial-container {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 20px auto;
+      border: 6px solid #f7931a;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff 60%, #e3e3e3 100%);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .sundial-hand {
+      position: absolute;
+      width: 8px;
+      height: 100px;
+      background-color: #f7931a;
+      top: 50px;
+      left: 96px;
+      transform-origin: 4px 100%;
+      transform: rotate(0deg);
+      transition: transform 0.5s ease;
+    }
+    .sundial-center {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background-color: #f7931a;
+      border-radius: 50%;
+      top: 92px;
+      left: 92px;
+    }
   </style>
 </head>
 <body>
   <h1>Bitcoin and USD Converter</h1>
   <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
   <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
+
+  <div class="sundial-container">
+    <div class="sundial-hand" id="sundialHand"></div>
+    <div class="sundial-center"></div>
+  </div>
 
   <script>
     async function fetchBitcoinPrice() {
@@ -37,15 +73,40 @@
         // Update the webpage with the fetched values
         document.getElementById('btcToUsd').innerText = `1 Bitcoin = $${btcToUsd.toLocaleString()} USD`;
         document.getElementById('usdToBtc').innerText = `1 USD = ${usdToBtc.toFixed(8)} BTC`;
+
+        // Reset the sundial clock
+        animateSundial(0);
       } catch (error) {
         document.getElementById('btcToUsd').innerText = 'Error fetching BTC to USD price.';
         document.getElementById('usdToBtc').innerText = 'Error fetching USD to BTC price.';
       }
     }
 
+    function animateSundial(angle) {
+      const hand = document.getElementById('sundialHand');
+      hand.style.transform = `rotate(${angle}deg)`;
+    }
+
+    // Initial fetch
     fetchBitcoinPrice();
-    // Refresh price every 60 seconds
-    setInterval(fetchBitcoinPrice, 60000);
+
+    // Refresh price and animate sundial every 60 seconds
+    let refreshTime = 60000; // in milliseconds
+    let interval = 1000; // update sundial every second
+    let stepAngle = 360 / (refreshTime / interval); // degrees per interval
+    let currentAngle = 0;
+
+    setInterval(() => {
+      // Update sundial
+      currentAngle += stepAngle;
+      animateSundial(currentAngle);
+
+      // Reset angle and fetch data at refresh time
+      if (currentAngle >= 360) {
+        currentAngle = 0;
+        fetchBitcoinPrice();
+      }
+    }, interval);
   </script>
 </body>
 </html>
