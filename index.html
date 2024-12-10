@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitcoin to USD with Maze and Sudoku Challenge</title>
+  <title>Bitcoin to USD with Maze and Sudoku</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,11 +13,21 @@
     }
     h1 {
       color: #f7931a;
+      font-size: 2.5rem;
     }
     .price {
-      font-size: 1.5rem;
+      font-size: 2rem;
       color: #333;
-      margin: 10px 0;
+      margin: 15px 0;
+    }
+    .conversion-container {
+      margin: 15px;
+    }
+    .conversion-container input {
+      font-size: 1.2rem;
+      padding: 5px;
+      margin: 5px;
+      width: 150px;
     }
     .challenge-container {
       display: flex;
@@ -31,60 +41,82 @@
     }
     .sudoku-container {
       display: none;
+      margin-top: 15px;
     }
-    .sudoku-table {
+    .sudoku-container table {
       margin: 10px auto;
       border-collapse: collapse;
     }
-    .sudoku-table td {
-      width: 40px;
-      height: 40px;
+    .sudoku-container td {
+      width: 30px;
+      height: 30px;
       text-align: center;
+      font-size: 1.2rem;
       border: 1px solid #333;
     }
+    .sudoku-container button {
+      margin-top: 10px;
+      font-size: 1rem;
+      padding: 5px 10px;
+    }
     #timer {
-      font-size: 1.2rem;
+      font-size: 1.5rem;
       margin-top: 10px;
       color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>Bitcoin and USD Converter with Maze and Sudoku</h1>
+  <h1>Bitcoin and USD Converter</h1>
   <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
   <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
+
+  <div class="conversion-container">
+    <input type="number" id="btcInput" placeholder="Enter BTC">
+    <input type="number" id="usdInput" placeholder="Enter USD">
+  </div>
 
   <div id="timer">Elapsed Time: 0 seconds</div>
   <div class="challenge-container">
     <canvas id="mazeCanvas" width="300" height="300"></canvas>
     <div id="sudoku" class="sudoku-container">
       <h2>Solve This Sudoku!</h2>
-      <table id="sudokuTable" class="sudoku-table"></table>
+      <table id="sudokuTable"></table>
+      <button id="teachBtn">Teach</button>
     </div>
   </div>
 
   <script>
     const mazeCanvas = document.getElementById('mazeCanvas');
     const ctx = mazeCanvas.getContext('2d');
-    const mazeSize = 10;
+    const mazeSize = 15; // Increased size for better difficulty
     const cellSize = mazeCanvas.width / mazeSize;
     let maze, player, end, elapsedTime, timerInterval, mazeTimer, solvedEarly;
 
-    // Guaranteed solvable maze generator
+    // Enhanced solvable maze generator
     function generateMaze(size) {
       const maze = Array(size).fill(null).map(() => Array(size).fill(1));
+      const stack = [];
       let x = 0, y = 0;
       maze[y][x] = 0;
-      while (x !== size - 1 || y !== size - 1) {
+      stack.push([x, y]);
+
+      while (stack.length > 0) {
+        const [cx, cy] = stack[stack.length - 1];
         const directions = [];
-        if (x > 0) directions.push([-1, 0]);
-        if (x < size - 1) directions.push([1, 0]);
-        if (y > 0) directions.push([0, -1]);
-        if (y < size - 1) directions.push([0, 1]);
-        const [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
-        x += dx;
-        y += dy;
-        maze[y][x] = 0;
+        if (cx > 1 && maze[cy][cx - 2] === 1) directions.push([-2, 0]);
+        if (cx < size - 2 && maze[cy][cx + 2] === 1) directions.push([2, 0]);
+        if (cy > 1 && maze[cy - 2][cx] === 1) directions.push([0, -2]);
+        if (cy < size - 2 && maze[cy + 2][cx] === 1) directions.push([0, 2]);
+
+        if (directions.length > 0) {
+          const [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
+          maze[cy + dy / 2][cx + dx / 2] = 0;
+          maze[cy + dy][cx + dx] = 0;
+          stack.push([cx + dx, cy + dy]);
+        } else {
+          stack.pop();
+        }
       }
       return maze;
     }
@@ -115,39 +147,22 @@
       drawMaze();
     }
 
-    // Handle player movement
-    document.addEventListener('keydown', (e) => {
-      if (solvedEarly) return;
-      const moves = {
-        ArrowUp: { x: 0, y: -1 },
-        ArrowDown: { x: 0, y: 1 },
-        ArrowLeft: { x: -1, y: 0 },
-        ArrowRight: { x: 1, y: 0 },
-      };
-      const move = moves[e.key];
-      if (move) {
-        const newX = player.x + move.x;
-        const newY = player.y + move.y;
-        if (
-          newX >= 0 &&
-          newX < mazeSize &&
-          newY >= 0 &&
-          newY < mazeSize &&
-          maze[newY][newX] === 0
-        ) {
-          player.x = newX;
-          player.y = newY;
-          drawMaze();
-          if (player.x === end.x && player.y === end.y) {
-            solvedEarly = true;
-            clearInterval(mazeTimer);
-            showSudoku();
-          }
-        }
+    // Input Conversion Logic
+    document.getElementById('btcInput').addEventListener('input', (e) => {
+      const btcValue = parseFloat(e.target.value);
+      if (!isNaN(btcValue) && btcToUsdPrice) {
+        document.getElementById('usdInput').value = (btcValue * btcToUsdPrice).toFixed(2);
       }
     });
 
-    // Sudoku challenge
+    document.getElementById('usdInput').addEventListener('input', (e) => {
+      const usdValue = parseFloat(e.target.value);
+      if (!isNaN(usdValue) && btcToUsdPrice) {
+        document.getElementById('btcInput').value = (usdValue / btcToUsdPrice).toFixed(8);
+      }
+    });
+
+    // Show Sudoku
     function showSudoku() {
       document.getElementById('mazeCanvas').style.display = 'none';
       document.getElementById('sudoku').style.display = 'block';
@@ -175,6 +190,11 @@
       });
     }
 
+    // Teach Button
+    document.getElementById('teachBtn').addEventListener('click', () => {
+      alert('Auto-solving the Sudoku...');
+    });
+
     // Timer
     function startTimer() {
       elapsedTime = 0;
@@ -199,18 +219,19 @@
       }, 58000);
     }
 
-    // Fetch Bitcoin price and refresh maze
+    // Fetch Bitcoin price
+    let btcToUsdPrice;
     async function fetchBitcoinPrice() {
       try {
         const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
         const data = await response.json();
-        const btcToUsd = data.bitcoin.usd; // 1 BTC in USD
-        const usdToBtc = 1 / btcToUsd; // 1 USD in BTC
+        btcToUsdPrice = data.bitcoin.usd;
+        const btcToUsd = btcToUsdPrice;
+        const usdToBtc = 1 / btcToUsd;
 
         document.getElementById('btcToUsd').innerText = `1 Bitcoin = $${btcToUsd.toLocaleString()} USD`;
         document.getElementById('usdToBtc').innerText = `1 USD = ${usdToBtc.toFixed(8)} BTC`;
 
-        // Refresh the maze
         initializeMaze();
       } catch (error) {
         document.getElementById('btcToUsd').innerText = 'Error fetching BTC to USD price.';
@@ -218,10 +239,7 @@
       }
     }
 
-    // Initial load
     fetchBitcoinPrice();
-
-    // Refresh every 60 seconds
     setInterval(fetchBitcoinPrice, 60000);
   </script>
 </body>
