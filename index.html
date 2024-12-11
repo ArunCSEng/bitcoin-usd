@@ -45,14 +45,14 @@
     }
     .sudoku-container table {
       margin: 0 auto;
-      border-spacing: 0;
+      border-collapse: collapse;
     }
     .sudoku-container td {
+      width: 30px;
+      height: 30px;
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1rem;
       border: 1px solid #333;
-      width: 33px;
-      height: 33px;
     }
     .sudoku-container button {
       margin-top: 10px;
@@ -61,7 +61,7 @@
     }
     #timer {
       font-size: 1.5rem;
-      margin-top: 10px;
+      margin-top: 20px;
       color: #333;
     }
   </style>
@@ -93,7 +93,7 @@
   </div>
 
   <!-- Part 2: Maze Game and Sudoku Integration -->
-  <div id="timer" style="font-size: 1.5rem; margin-top: 20px;">Price updates every 1 minute</div>
+  <div id="timer" style="font-size: 1.5rem;">Price updates every 60 seconds: 0</div>
   <div class="challenge-container">
     <canvas id="mazeCanvas" width="300" height="300"></canvas>
 
@@ -212,7 +212,7 @@
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         elapsedTime++;
-        document.getElementById('timer').innerText = `Price updates every 1 minute: ${elapsedTime} seconds`;
+        document.getElementById('timer').innerText = `Price updates every 60 seconds: ${elapsedTime}`;
 
         if (elapsedTime >= 60) {
           resetGame();
@@ -266,15 +266,35 @@
     function showSudoku() {
       mazeCanvas.style.display = 'none';
       sudokuContainer.style.display = 'block';
-      generateRandomSudoku();
+      generateSudoku();
     }
 
-    function generateRandomSudoku() {
-      sudokuPuzzle = Array.from({ length: 9 }, () =>
-        Array.from({ length: 9 }, () => (Math.random() > 0.5 ? Math.floor(Math.random() * 9) + 1 : 0))
-      );
-      sudokuSolution = sudokuPuzzle.map((row) => row.map((cell) => (cell === 0 ? Math.floor(Math.random() * 9) + 1 : cell)));
+    function generateSudoku() {
+      sudokuPuzzle = Array.from({ length: 9 }, () => Array(9).fill(0));
+      sudokuSolution = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+      for (let row = 0; row < 9; row++) {
+        for (let col = 0; col < 9; col++) {
+          let num;
+          do {
+            num = Math.floor(Math.random() * 9) + 1;
+          } while (!isValid(num, row, col, sudokuPuzzle));
+          sudokuSolution[row][col] = num;
+          if (Math.random() > 0.5) sudokuPuzzle[row][col] = num;
+        }
+      }
       renderSudoku();
+    }
+
+    function isValid(num, row, col, board) {
+      for (let i = 0; i < 9; i++) {
+        if (board[row][i] === num || board[i][col] === num) return false;
+
+        const boxRow = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+        const boxCol = 3 * Math.floor(col / 3) + (i % 3);
+        if (board[boxRow][boxCol] === num) return false;
+      }
+      return true;
     }
 
     function renderSudoku() {
