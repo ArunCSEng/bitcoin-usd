@@ -67,155 +67,276 @@
   </style>
 </head>
 <body>
+  <!-- Part 1: Bitcoin and USD Conversion -->
   <div>
     <h1>Bitcoin and USD Converter</h1>
     <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
     <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
+
     <div class="conversion-container">
       <label for="btcInput" style="font-size: 1.5rem;">BTC:</label>
-      <input type="number" id="btcInput" placeholder="Enter BTC" />
+      <input
+        type="number"
+        id="btcInput"
+        placeholder="Enter BTC"
+        style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
+      />
       <br />
       <label for="usdInput" style="font-size: 1.5rem;">USD:</label>
-      <input type="number" id="usdInput" placeholder="Enter USD" />
+      <input
+        type="number"
+        id="usdInput"
+        placeholder="Enter USD"
+        style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
+      />
     </div>
   </div>
+
+  <!-- Part 2: Maze Game and Sudoku Integration -->
   <div id="timer" style="font-size: 1.5rem;">Price updates every 60 seconds: 0</div>
   <div class="challenge-container">
     <canvas id="mazeCanvas" width="300" height="300"></canvas>
+
+    <!-- Sudoku Container -->
     <div id="sudokuContainer" class="sudoku-container">
       <h2>Solve This Sudoku!</h2>
       <table id="sudokuTable"></table>
       <button id="solveSudokuBtn">Solve</button>
     </div>
   </div>
+
   <script>
+    // Part 1: Bitcoin and USD Conversion
+    let btcToUsdPrice = null;
+
+    async function fetchBitcoinPrice() {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        if (!response.ok) throw new Error('API request failed');
+        const data = await response.json();
+        btcToUsdPrice = data.bitcoin.usd;
+        document.getElementById('btcToUsd').innerText = `1 Bitcoin = $${btcToUsdPrice.toLocaleString()} USD`;
+        document.getElementById('usdToBtc').innerText = `1 USD = ${(1 / btcToUsdPrice).toFixed(8)} BTC`;
+      } catch (error) {
+        document.getElementById('btcToUsd').innerText = 'Failed to fetch Bitcoin price.';
+        document.getElementById('usdToBtc').innerText = 'Please try again later.';
+      }
+    }
+
+    document.getElementById('btcInput').addEventListener('input', (e) => {
+      const btcValue = parseFloat(e.target.value);
+      if (!isNaN(btcValue) && btcToUsdPrice) {
+        document.getElementById('usdInput').value = (btcValue * btcToUsdPrice).toFixed(2);
+      } else {
+        document.getElementById('usdInput').value = '';
+      }
+    });
+
+    document.getElementById('usdInput').addEventListener('input', (e) => {
+      const usdValue = parseFloat(e.target.value);
+      if (!isNaN(usdValue) && btcToUsdPrice) {
+        document.getElementById('btcInput').value = (usdValue / btcToUsdPrice).toFixed(8);
+      } else {
+        document.getElementById('btcInput').value = '';
+      }
+    });
+
+    fetchBitcoinPrice();
+    setInterval(fetchBitcoinPrice, 60000);
+
+    // Part 2: Obfuscated Maze and Sudoku Logic
     (function () {
-      const q = document.getElementById,
-        J = document,
-        L = setInterval,
-        o = clearInterval,
-        x = Math,
-        k = [],
-        U = [],
-        M = Array.from,
-        p = J.createElement,
-        h = "#f7931a",
-        d = "#33cc33";
-      let A, b, g, P, t, m;
+      const a = document.getElementById("mazeCanvas");
+      const b = a.getContext("2d");
+      const c = 15;
+      const d = a.width / c;
+      let e, f, g;
+      let h = 0;
+      let i;
+      let j = false;
 
-      function u(C) {
-        return C === 0 ? "" : C;
-      }
+      const k = document.getElementById("sudokuContainer");
+      const l = document.getElementById("sudokuTable");
+      const m = document.getElementById("solveSudokuBtn");
+      let n = [];
+      let o = [];
 
-      function F(C, B, z, G) {
-        for (let y = 0; y < 9; y++) {
-          if (G[B][y] === C || G[y][z] === C) return false;
-          let v = x.floor(B / 3) * 3 + x.floor(y / 3),
-            w = x.floor(z / 3) * 3 + (y % 3);
-          if (G[v][w] === C) return false;
+      function p() {
+        n = Array.from({ length: 9 }, () => Array(9).fill(0));
+        o = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+        function q(x, y, z, board) {
+          for (let a = 0; a < 9; a++) {
+            if (board[y][a] === x || board[a][z] === x) return false;
+
+            const b = 3 * Math.floor(y / 3) + Math.floor(a / 3);
+            const c = 3 * Math.floor(z / 3) + (a % 3);
+            if (board[b][c] === x) return false;
+          }
+          return true;
         }
-        return true;
+
+        function r(board) {
+          for (let a = 0; a < 9; a++) {
+            for (let b = 0; b < 9; b++) {
+              if (board[a][b] === 0) {
+                for (let c = 1; c <= 9; c++) {
+                  if (q(c, a, b, board)) {
+                    board[a][b] = c;
+                    if (r(board)) return true;
+                    board[a][b] = 0;
+                  }
+                }
+                return false;
+              }
+            }
+          }
+          return true;
+        }
+
+        r(o);
+
+        const s = 30;
+        const t = Array.from({ length: 81 }, (_, i) => i);
+        for (let a = 0; a < s; a++) {
+          const b = t.splice(Math.floor(Math.random() * t.length), 1)[0];
+          const c = Math.floor(b / 9);
+          const d = b % 9;
+          n[c][d] = o[c][d];
+        }
+
+        u(n);
       }
 
-      function y(B) {
-        for (let z = 0; z < 9; z++) {
-          for (let A = 0; A < 9; A++) {
-            if (B[z][A] === 0) {
-              for (let C = 1; C <= 9; C++) {
-                if (F(C, z, A, B)) {
-                  B[z][A] = C;
-                  if (y(B)) return true;
-                  B[z][A] = 0;
-                }
-              }
-              return false;
+      function u(puzzle) {
+        l.innerHTML = "";
+        puzzle.forEach((row, rowIndex) => {
+          const tr = document.createElement("tr");
+          row.forEach((cell, colIndex) => {
+            const td = document.createElement("td");
+            td.textContent = cell === 0 ? "" : cell;
+            tr.appendChild(td);
+          });
+          l.appendChild(tr);
+        });
+      }
+
+      function v() {
+        u(o);
+      }
+
+      m.addEventListener("click", v);
+
+      function w() {
+        a.style.display = "none";
+        k.style.display = "block";
+        p();
+      }
+
+      function x(size) {
+        const maze = Array(size).fill(null).map(() => Array(size).fill(1));
+        const stack = [];
+        let a = 0,
+          b = 0;
+        maze[b][a] = 0;
+        stack.push([a, b]);
+
+        while (stack.length > 0) {
+          const [c, d] = stack[stack.length - 1];
+          const e = [];
+          if (c > 1 && maze[d][c - 2] === 1) e.push([-2, 0]);
+          if (c < size - 2 && maze[d][c + 2] === 1) e.push([2, 0]);
+          if (d > 1 && maze[d - 2][c] === 1) e.push([0, -2]);
+          if (d < size - 2 && maze[d + 2][c] === 1) e.push([0, 2]);
+
+          if (e.length > 0) {
+            const [f, g] = e[Math.floor(Math.random() * e.length)];
+            maze[d + g / 2][c + f / 2] = 0;
+            maze[d + g][c + f] = 0;
+            stack.push([c + f, d + g]);
+          } else {
+            stack.pop();
+          }
+        }
+        return maze;
+      }
+
+      function y() {
+        b.clearRect(0, 0, a.width, a.height);
+        for (let a = 0; a < c; a++) {
+          for (let f = 0; f < c; f++) {
+            if (e[a][f] === 1) {
+              b.fillStyle = "#000";
+              b.fillRect(f * d, a * d, d, d);
             }
           }
         }
-        return true;
+        b.fillStyle = "#f7931a";
+        b.fillRect(f.x * d, f.y * d, d, d);
+        b.fillStyle = "#33cc33";
+        b.fillRect(g.x * d, g.y * d, d, d);
       }
 
-      function z(B, C) {
-        const E = x.floor(C / 9),
-          D = C % 9;
-        return F(B, E, D, k) && (k[E][D] = B) && y(k);
+      function z() {
+        e = x(c);
+        f = { x: 0, y: 0 };
+        g = { x: c - 1, y: c - 1 };
+        j = false;
+        y();
+        A();
       }
 
-      function B() {
-        const C = [];
-        for (let D = 0; D < 9; D++) {
-          C.push(M({ length: 9 }, () => 0));
-        }
-        y(C);
-        return C;
-      }
+      function A() {
+        h = 0;
+        clearInterval(i);
+        i = setInterval(() => {
+          h++;
+          document.getElementById("timer").innerText = `Price updates every 60 seconds: ${h}`;
 
-      function E(C) {
-        J.getElementById("sudokuTable").innerHTML = "";
-        C.forEach((F) => {
-          const D = p.call(J, "tr");
-          F.forEach((z) => {
-            const A = p.call(J, "td");
-            A.textContent = u(z);
-            D.appendChild(A);
-          });
-          J.getElementById("sudokuTable").appendChild(D);
-        });
-      }
-
-      function V() {
-        E(k);
-      }
-
-      function W() {
-        g = setInterval(() => {
-          t++;
-          q.call(J, "timer").innerText = "Price updates every 60 seconds: " + t;
-          if (t >= 60) R();
+          if (h >= 60) {
+            B();
+          }
         }, 1000);
       }
 
-      function R() {
-        o.call(J, g);
-        J.getElementById("sudokuContainer").style.display = "none";
-        J.getElementById("mazeCanvas").style.display = "block";
-        S();
+      function B() {
+        clearInterval(i);
+        k.style.display = "none";
+        a.style.display = "block";
+        z();
       }
 
-      function T() {
-        m = L(() => {
-          A.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-          o.call(J, g);
-        }, 30000);
-      }
-
-      function S() {
-        P = B();
-        A = mazeCanvas.getContext("2d");
-        k = P;
-        U.length = 0;
-        E(k);
-        T();
-        W();
-      }
-
-      function X() {
-        J.addEventListener("keydown", (y) => {
-          const C = {
-            ArrowUp: { x: 0, y: -1 },
-            ArrowDown: { x: 0, y: 1 },
-            ArrowLeft: { x: -1, y: 0 },
-            ArrowRight: { x: 1, y: 0 },
-          };
-          const A = C[y.key];
-          if (A) {
-            const B = A.x + A.y;
-            if (B === 1) z(k, B) && W();
+      document.addEventListener("keydown", (e) => {
+        if (j) return;
+        const moves = {
+          ArrowUp: { x: 0, y: -1 },
+          ArrowDown: { x: 0, y: 1 },
+          ArrowLeft: { x: -1, y: 0 },
+          ArrowRight: { x: 1, y: 0 },
+        };
+        const move = moves[e.key];
+        if (move) {
+          const a = f.x + move.x;
+          const b = f.y + move.y;
+          if (
+            a >= 0 &&
+            a < c &&
+            b >= 0 &&
+            b < c &&
+            e[b][a] === 0
+          ) {
+            f.x = a;
+            f.y = b;
+            y();
+            if (f.x === g.x && f.y === g.y) {
+              j = true;
+              if (h <= 30) w();
+            }
           }
-        });
-      }
+        }
+      });
 
-      X();
+      z();
     })();
   </script>
 </body>
