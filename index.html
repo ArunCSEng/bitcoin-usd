@@ -9,11 +9,11 @@
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 20px;
-      background-color: #ffffff; /* Pure white background */
+      background-color: #ffffff;
     }
     h1 {
       color: #f7931a;
-      font-size: 3rem;
+      font-size: 2.5rem;
     }
     .price {
       font-size: 2.5rem;
@@ -145,14 +145,94 @@
     setInterval(fetchBitcoinPrice, 60000);
 
     // Part 2: Maze Game and Sudoku Integration
-    const mazeCanvas = document.getElementById('mazeCanvas');
-    const ctx = mazeCanvas.getContext('2d');
+    const mazeCanvas = document.getElementById("mazeCanvas");
+    const ctx = mazeCanvas.getContext("2d");
     const mazeSize = 15;
     const cellSize = mazeCanvas.width / mazeSize;
     let maze, player, end;
     let elapsedTime = 0;
     let timerInterval;
     let mazeSolved = false;
+
+    const sudokuContainer = document.getElementById("sudokuContainer");
+    const sudokuTable = document.getElementById("sudokuTable");
+    const solveSudokuBtn = document.getElementById("solveSudokuBtn");
+    let sudokuPuzzle = [];
+    let sudokuSolution = [];
+
+    function generateSudoku() {
+      sudokuPuzzle = Array.from({ length: 9 }, () => Array(9).fill(0));
+      sudokuSolution = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+      function isValid(num, row, col, board) {
+        for (let i = 0; i < 9; i++) {
+          if (board[row][i] === num || board[i][col] === num) return false;
+
+          const boxRow = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+          const boxCol = 3 * Math.floor(col / 3) + (i % 3);
+          if (board[boxRow][boxCol] === num) return false;
+        }
+        return true;
+      }
+
+      function solve(board) {
+        for (let row = 0; row < 9; row++) {
+          for (let col = 0; col < 9; col++) {
+            if (board[row][col] === 0) {
+              for (let num = 1; num <= 9; num++) {
+                if (isValid(num, row, col, board)) {
+                  board[row][col] = num;
+                  if (solve(board)) return true;
+                  board[row][col] = 0;
+                }
+              }
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      // Generate a complete Sudoku solution
+      solve(sudokuSolution);
+
+      // Create a puzzle by hiding some cells
+      const clues = 30; // Number of visible cells (increase for easier puzzles)
+      const positions = Array.from({ length: 81 }, (_, i) => i);
+      for (let i = 0; i < clues; i++) {
+        const pos = positions.splice(Math.floor(Math.random() * positions.length), 1)[0];
+        const row = Math.floor(pos / 9);
+        const col = pos % 9;
+        sudokuPuzzle[row][col] = sudokuSolution[row][col];
+      }
+
+      renderSudoku(sudokuPuzzle);
+    }
+
+    function renderSudoku(puzzle) {
+      sudokuTable.innerHTML = "";
+      puzzle.forEach((row, rowIndex) => {
+        const tr = document.createElement("tr");
+        row.forEach((cell, colIndex) => {
+          const td = document.createElement("td");
+          td.textContent = cell === 0 ? "" : cell;
+          tr.appendChild(td);
+        });
+        sudokuTable.appendChild(tr);
+      });
+    }
+
+    function solveSudoku() {
+      renderSudoku(sudokuSolution);
+    }
+
+    solveSudokuBtn.addEventListener("click", solveSudoku);
+
+    function showSudoku() {
+      mazeCanvas.style.display = "none";
+      sudokuContainer.style.display = "block";
+      generateSudoku();
+    }
 
     function generateMaze(size) {
       const maze = Array(size).fill(null).map(() => Array(size).fill(1));
@@ -187,14 +267,14 @@
       for (let i = 0; i < mazeSize; i++) {
         for (let j = 0; j < mazeSize; j++) {
           if (maze[i][j] === 1) {
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = "#000";
             ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
           }
         }
       }
-      ctx.fillStyle = '#f7931a';
+      ctx.fillStyle = "#f7931a";
       ctx.fillRect(player.x * cellSize, player.y * cellSize, cellSize, cellSize);
-      ctx.fillStyle = '#33cc33';
+      ctx.fillStyle = "#33cc33";
       ctx.fillRect(end.x * cellSize, end.y * cellSize, cellSize, cellSize);
     }
 
@@ -212,7 +292,7 @@
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         elapsedTime++;
-        document.getElementById('timer').innerText = `Price updates every 60 seconds: ${elapsedTime}`;
+        document.getElementById("timer").innerText = `Price updates every 60 seconds: ${elapsedTime}`;
 
         if (elapsedTime >= 60) {
           resetGame();
@@ -222,12 +302,12 @@
 
     function resetGame() {
       clearInterval(timerInterval);
-      document.getElementById('sudokuContainer').style.display = 'none';
-      mazeCanvas.style.display = 'block';
+      sudokuContainer.style.display = "none";
+      mazeCanvas.style.display = "block";
       initializeMaze();
     }
 
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener("keydown", (e) => {
       if (mazeSolved) return;
       const moves = {
         ArrowUp: { x: 0, y: -1 },
@@ -255,68 +335,6 @@
           }
         }
       }
-    });
-
-    const sudokuContainer = document.getElementById('sudokuContainer');
-    const sudokuTable = document.getElementById('sudokuTable');
-    const solveSudokuBtn = document.getElementById('solveSudokuBtn');
-    let sudokuPuzzle = [];
-    let sudokuSolution = [];
-
-    function showSudoku() {
-      mazeCanvas.style.display = 'none';
-      sudokuContainer.style.display = 'block';
-      generateSudoku();
-    }
-
-    function generateSudoku() {
-      const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
-
-      for (let box = 0; box < 9; box++) {
-        fillBox(grid, box);
-      }
-
-      sudokuPuzzle = grid.map(row => row.slice());
-      sudokuSolution = grid.map(row => row.slice());
-      renderSudoku(sudokuPuzzle);
-    }
-
-    function fillBox(grid, boxIndex) {
-      const startRow = Math.floor(boxIndex / 3) * 3;
-      const startCol = (boxIndex % 3) * 3;
-      const nums = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-
-      let idx = 0;
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          grid[startRow + i][startCol + j] = nums[idx++];
-        }
-      }
-    }
-
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-
-    function renderSudoku(grid) {
-      sudokuTable.innerHTML = "";
-      grid.forEach(row => {
-        const tr = document.createElement("tr");
-        row.forEach(cell => {
-          const td = document.createElement("td");
-          td.textContent = cell === 0 ? "" : cell;
-          tr.appendChild(td);
-        });
-        sudokuTable.appendChild(tr);
-      });
-    }
-
-    solveSudokuBtn.addEventListener("click", () => {
-      renderSudoku(sudokuSolution);
     });
 
     initializeMaze();
