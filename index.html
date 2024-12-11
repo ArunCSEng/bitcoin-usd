@@ -102,97 +102,28 @@
 
   <script>
     (function () {
-      const _0x2314 = [
-        "btcToUsd",
-        "usdToBtc",
-        "btcInput",
-        "usdInput",
-        "mazeCanvas",
-        "sudokuTable",
-        "solveSudokuBtn",
-        "sudokuContainer",
-        "timer",
-      ].map((id) => document.getElementById(id));
-      const [
-        _0x4a01,
-        _0x89c,
-        _0x9210,
-        _0x65fb,
-        _0x37c8,
-        _0x1e94,
-        _0x2cf0,
-        _0x8903,
-        _0x7d44,
-      ] = _0x2314;
+      const _0x1f43 = document.getElementById.bind(document);
+      const _0x123 = ["btcToUsd", "usdToBtc", "btcInput", "usdInput", "timer"];
+      const _0x4d3c = _0x123.map(_0x1f43);
+      const [_0x3ea1, _0x1b8d, _0x2342, _0x4319, _0x5c3f] = _0x4d3c;
 
-      let _0x61ec = 0,
-        _0x432e,
-        _0x5c48 = false,
-        _0x9e10 = [],
-        _0x3d28 = [];
-
-      const _0xafe = async () => {
+      async function _0xafe() {
         try {
-          const _0x21fc = await fetch(
+          const _0x18d2 = await fetch(
             "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
           );
-          const _0x8e3c = await _0x21fc.json();
-          const _0x3b6f = _0x8e3c.bitcoin.usd;
-          _0x4a01.innerText = `1 Bitcoin = $${_0x3b6f.toLocaleString()} USD`;
-          _0x89c.innerText = `1 USD = ${(1 / _0x3b6f).toFixed(8)} BTC`;
+          const _0x28c = await _0x18d2.json();
+          const _0x1e7c = _0x28c.bitcoin.usd;
+          _0x3ea1.innerText = `1 Bitcoin = $${_0x1e7c.toLocaleString()} USD`;
+          _0x1b8d.innerText = `1 USD = ${(1 / _0x1e7c).toFixed(8)} BTC`;
         } catch (e) {
-          _0x4a01.innerText = "Failed to fetch Bitcoin price.";
-          _0x89c.innerText = "Try Again Later.";
+          _0x3ea1.innerText = "Error Fetching Price";
         }
-      };
+      }
 
-      const _0x1fc2 = () => {
-        clearInterval(_0x432e);
-        _0x61ec = 0;
-        _0x7d44.innerText = `Price updates every 60 seconds: 0`;
-        _0x432e = setInterval(() => {
-          _0x61ec++;
-          _0x7d44.innerText = `Price updates every 60 seconds: ${_0x61ec}`;
-          if (_0x61ec >= 60) {
-            _0x61ec = 0;
-          }
-        }, 1000);
-      };
-
-      const _0x2df9 = () => {
-        // Sudoku Puzzle Logic
-        const _0x2a3e = [];
-        for (let _0x1bfc = 0; _0x1bfc < 9; _0x1bfc++) {
-          _0x2a3e[_0x1bfc] = [];
-          for (let _0x354d = 0; _0x354d < 9; _0x354d++) {
-            _0x2a3e[_0x1bfc][_0x354d] =
-              Math.random() > 0.6
-                ? Math.floor(Math.random() * 9) + 1
-                : 0;
-          }
-        }
-        _0x3d28 = _0x2a3e;
-        _0x8903.style.display = "block";
-      };
-
-      const _0x3c7f = () => {
-        _0x8903.style.display = "none";
-        _0x2cf0.style.display = "none";
-      };
-
-      const _0x5ff7 = () => {
-        const _0x4b1b = [];
-        for (let _0x6d22 of _0x3d28) {
-          _0x4b1b.push([..._0x6d22]);
-        }
-        console.log(_0x4b1b); // Simulating Sudoku Solve
-      };
-
+      _0x2342.addEventListener("input", () => {});
+      _0x4319.addEventListener("input", () => {});
       _0xafe();
-      setInterval(_0xafe, 60000);
-      _0x1fc2();
-
-      _0x2cf0.addEventListener("click", _0x5ff7);
     })();
   </script>
 </body>
