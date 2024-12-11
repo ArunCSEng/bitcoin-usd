@@ -3,341 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitcoin Converter and Maze Game</title>
+  <title>App</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 20px;
-      background-color: #ffffff;
-    }
-    h1 {
-      color: #f7931a;
-      font-size: 2.5rem;
-    }
-    .price {
-      font-size: 2.5rem;
-      color: #333;
-      margin: 15px 0;
-    }
-    .conversion-container {
-      margin: 15px;
-    }
-    .conversion-container input {
-      font-size: 1.5rem;
-      padding: 10px;
-      margin: 5px;
-      width: 200px;
-    }
-    .challenge-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-    canvas {
-      border: 2px solid #000;
-      background: #fff;
-    }
-    .sudoku-container {
-      display: none;
-      margin-top: 20px;
-    }
-    .sudoku-container table {
-      margin: 0 auto;
-      border-collapse: collapse;
-    }
-    .sudoku-container td {
-      width: 30px;
-      height: 30px;
-      text-align: center;
-      font-size: 1rem;
-      border: 1px solid #333;
-    }
-    .sudoku-container button {
-      margin-top: 10px;
-      font-size: 1.2rem;
-      padding: 8px 15px;
-    }
-    #timer {
-      font-size: 1.5rem;
-      margin-top: 20px;
-      color: #333;
-    }
+    body{font-family:Arial,sans-serif;text-align:center;margin:20px;background:#fff;}
+    h1{color:#f7931a;font-size:2.5rem;}
+    .price{font-size:2.5rem;color:#333;margin:15px 0;}
+    .conversion-container{margin:15px;}
+    .conversion-container input{font-size:1.5rem;padding:10px;margin:5px;width:200px;}
+    .challenge-container{display:flex;justify-content:center;align-items:center;flex-direction:column;}
+    canvas{border:2px solid #000;background:#fff;}
+    .sudoku-container{display:none;margin-top:20px;}
+    .sudoku-container table{margin:0 auto;border-collapse:collapse;}
+    .sudoku-container td{width:30px;height:30px;text-align:center;font-size:1rem;border:1px solid #333;}
+    .sudoku-container button{margin-top:10px;font-size:1.2rem;padding:8px 15px;}
+    #timer{font-size:1.5rem;margin-top:20px;color:#333;}
   </style>
 </head>
 <body>
-  <!-- Part 1: Bitcoin and USD Conversion -->
-  <div>
-    <h1>Bitcoin and USD Converter</h1>
-    <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
-    <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
-
-    <div class="conversion-container">
-      <label for="btcInput" style="font-size: 1.5rem;">BTC:</label>
-      <input
-        type="number"
-        id="btcInput"
-        placeholder="Enter BTC"
-        style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
-      />
-      <br />
-      <label for="usdInput" style="font-size: 1.5rem;">USD:</label>
-      <input
-        type="number"
-        id="usdInput"
-        placeholder="Enter USD"
-        style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
-      />
-    </div>
+  <h1>App</h1>
+  <div id="a" class="price">Loading...</div>
+  <div id="b" class="price">Loading...</div>
+  <div class="conversion-container">
+    <label for="c" style="font-size:1.5rem;">BTC:</label>
+    <input type="number" id="c" placeholder="Enter BTC" style="font-size:1.5rem;padding:10px;margin:10px;width:200px;">
+    <br>
+    <label for="d" style="font-size:1.5rem;">USD:</label>
+    <input type="number" id="d" placeholder="Enter USD" style="font-size:1.5rem;padding:10px;margin:10px;width:200px;">
   </div>
-
-  <!-- Part 2: Maze Game and Sudoku Integration -->
-  <div id="timer" style="font-size: 1.5rem;">Price updates every 60 seconds: 0</div>
+  <div id="e" style="font-size:1.5rem;">Updating: 0</div>
   <div class="challenge-container">
-    <canvas id="mazeCanvas" width="300" height="300"></canvas>
-
-    <!-- Sudoku Container -->
-    <div id="sudokuContainer" class="sudoku-container">
-      <h2>Solve This Sudoku!</h2>
-      <table id="sudokuTable"></table>
-      <button id="solveSudokuBtn">Solve</button>
+    <canvas id="f" width="300" height="300"></canvas>
+    <div id="g" class="sudoku-container">
+      <h2>Solve</h2>
+      <table id="h"></table>
+      <button id="i">Solve</button>
     </div>
   </div>
-
   <script>
-    // Part 1: Bitcoin and USD Conversion
-    let btcToUsdPrice = null;
-
-    async function fetchBitcoinPrice() {
-      try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-        if (!response.ok) throw new Error('API request failed');
-        const data = await response.json();
-        btcToUsdPrice = data.bitcoin.usd;
-        document.getElementById('btcToUsd').innerText = `1 Bitcoin = $${btcToUsdPrice.toLocaleString()} USD`;
-        document.getElementById('usdToBtc').innerText = `1 USD = ${(1 / btcToUsdPrice).toFixed(8)} BTC`;
-      } catch (error) {
-        document.getElementById('btcToUsd').innerText = 'Failed to fetch Bitcoin price.';
-        document.getElementById('usdToBtc').innerText = 'Please try again later.';
-      }
-    }
-
-    document.getElementById('btcInput').addEventListener('input', (e) => {
-      const btcValue = parseFloat(e.target.value);
-      if (!isNaN(btcValue) && btcToUsdPrice) {
-        document.getElementById('usdInput').value = (btcValue * btcToUsdPrice).toFixed(2);
-      } else {
-        document.getElementById('usdInput').value = '';
-      }
-    });
-
-    document.getElementById('usdInput').addEventListener('input', (e) => {
-      const usdValue = parseFloat(e.target.value);
-      if (!isNaN(usdValue) && btcToUsdPrice) {
-        document.getElementById('btcInput').value = (usdValue / btcToUsdPrice).toFixed(8);
-      } else {
-        document.getElementById('btcInput').value = '';
-      }
-    });
-
-    fetchBitcoinPrice();
-    setInterval(fetchBitcoinPrice, 60000);
-
-    // Part 2: Maze Game and Sudoku Integration
-    const mazeCanvas = document.getElementById("mazeCanvas");
-    const ctx = mazeCanvas.getContext("2d");
-    const mazeSize = 15;
-    const cellSize = mazeCanvas.width / mazeSize;
-    let maze, player, end;
-    let elapsedTime = 0;
-    let timerInterval;
-    let mazeSolved = false;
-
-    const sudokuContainer = document.getElementById("sudokuContainer");
-    const sudokuTable = document.getElementById("sudokuTable");
-    const solveSudokuBtn = document.getElementById("solveSudokuBtn");
-    let sudokuPuzzle = [];
-    let sudokuSolution = [];
-
-    function generateSudoku() {
-      sudokuPuzzle = Array.from({ length: 9 }, () => Array(9).fill(0));
-      sudokuSolution = Array.from({ length: 9 }, () => Array(9).fill(0));
-
-      function isValid(num, row, col, board) {
-        for (let i = 0; i < 9; i++) {
-          if (board[row][i] === num || board[i][col] === num) return false;
-
-          const boxRow = 3 * Math.floor(row / 3) + Math.floor(i / 3);
-          const boxCol = 3 * Math.floor(col / 3) + (i % 3);
-          if (board[boxRow][boxCol] === num) return false;
-        }
-        return true;
-      }
-
-      function solve(board) {
-        for (let row = 0; row < 9; row++) {
-          for (let col = 0; col < 9; col++) {
-            if (board[row][col] === 0) {
-              for (let num = 1; num <= 9; num++) {
-                if (isValid(num, row, col, board)) {
-                  board[row][col] = num;
-                  if (solve(board)) return true;
-                  board[row][col] = 0;
-                }
-              }
-              return false;
-            }
-          }
-        }
-        return true;
-      }
-
-      // Generate a complete Sudoku solution
-      solve(sudokuSolution);
-
-      // Create a puzzle by hiding some cells
-      const clues = 30; // Number of visible cells (increase for easier puzzles)
-      const positions = Array.from({ length: 81 }, (_, i) => i);
-      for (let i = 0; i < clues; i++) {
-        const pos = positions.splice(Math.floor(Math.random() * positions.length), 1)[0];
-        const row = Math.floor(pos / 9);
-        const col = pos % 9;
-        sudokuPuzzle[row][col] = sudokuSolution[row][col];
-      }
-
-      renderSudoku(sudokuPuzzle);
-    }
-
-    function renderSudoku(puzzle) {
-      sudokuTable.innerHTML = "";
-      puzzle.forEach((row, rowIndex) => {
-        const tr = document.createElement("tr");
-        row.forEach((cell, colIndex) => {
-          const td = document.createElement("td");
-          td.textContent = cell === 0 ? "" : cell;
-          tr.appendChild(td);
-        });
-        sudokuTable.appendChild(tr);
-      });
-    }
-
-    function solveSudoku() {
-      renderSudoku(sudokuSolution);
-    }
-
-    solveSudokuBtn.addEventListener("click", solveSudoku);
-
-    function showSudoku() {
-      mazeCanvas.style.display = "none";
-      sudokuContainer.style.display = "block";
-      generateSudoku();
-    }
-
-    function generateMaze(size) {
-      const maze = Array(size).fill(null).map(() => Array(size).fill(1));
-      const stack = [];
-      let x = 0,
-        y = 0;
-      maze[y][x] = 0;
-      stack.push([x, y]);
-
-      while (stack.length > 0) {
-        const [cx, cy] = stack[stack.length - 1];
-        const directions = [];
-        if (cx > 1 && maze[cy][cx - 2] === 1) directions.push([-2, 0]);
-        if (cx < size - 2 && maze[cy][cx + 2] === 1) directions.push([2, 0]);
-        if (cy > 1 && maze[cy - 2][cx] === 1) directions.push([0, -2]);
-        if (cy < size - 2 && maze[cy + 2][cx] === 1) directions.push([0, 2]);
-
-        if (directions.length > 0) {
-          const [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
-          maze[cy + dy / 2][cx + dx / 2] = 0;
-          maze[cy + dy][cx + dx] = 0;
-          stack.push([cx + dx, cy + dy]);
-        } else {
-          stack.pop();
-        }
-      }
-      return maze;
-    }
-
-    function drawMaze() {
-      ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
-      for (let i = 0; i < mazeSize; i++) {
-        for (let j = 0; j < mazeSize; j++) {
-          if (maze[i][j] === 1) {
-            ctx.fillStyle = "#000";
-            ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
-          }
-        }
-      }
-      ctx.fillStyle = "#f7931a";
-      ctx.fillRect(player.x * cellSize, player.y * cellSize, cellSize, cellSize);
-      ctx.fillStyle = "#33cc33";
-      ctx.fillRect(end.x * cellSize, end.y * cellSize, cellSize, cellSize);
-    }
-
-    function initializeMaze() {
-      maze = generateMaze(mazeSize);
-      player = { x: 0, y: 0 };
-      end = { x: mazeSize - 1, y: mazeSize - 1 };
-      mazeSolved = false;
-      drawMaze();
-      startTimer();
-    }
-
-    function startTimer() {
-      elapsedTime = 0;
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        elapsedTime++;
-        document.getElementById("timer").innerText = `Price updates every 60 seconds: ${elapsedTime}`;
-
-        if (elapsedTime >= 60) {
-          resetGame();
-        }
-      }, 1000);
-    }
-
-    function resetGame() {
-      clearInterval(timerInterval);
-      sudokuContainer.style.display = "none";
-      mazeCanvas.style.display = "block";
-      initializeMaze();
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (mazeSolved) return;
-      const moves = {
-        ArrowUp: { x: 0, y: -1 },
-        ArrowDown: { x: 0, y: 1 },
-        ArrowLeft: { x: -1, y: 0 },
-        ArrowRight: { x: 1, y: 0 },
-      };
-      const move = moves[e.key];
-      if (move) {
-        const newX = player.x + move.x;
-        const newY = player.y + move.y;
-        if (
-          newX >= 0 &&
-          newX < mazeSize &&
-          newY >= 0 &&
-          newY < mazeSize &&
-          maze[newY][newX] === 0
-        ) {
-          player.x = newX;
-          player.y = newY;
-          drawMaze();
-          if (player.x === end.x && player.y === end.y) {
-            mazeSolved = true;
-            if (elapsedTime <= 30) showSudoku();
-          }
-        }
-      }
-    });
-
-    initializeMaze();
+    let j=null;async function k(){try{const l=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");if(!l.ok)throw new Error("API failed");const m=await l.json();j=m.bitcoin.usd;document.getElementById("a").innerText=`1 BTC = $${j.toLocaleString()} USD`;document.getElementById("b").innerText=`1 USD = ${(1/j).toFixed(8)} BTC`}catch(n){document.getElementById("a").innerText="Failed.";document.getElementById("b").innerText="Try again."}}document.getElementById("c").addEventListener("input",o=>{const p=parseFloat(o.target.value);document.getElementById("d").value=!isNaN(p)&&j?(p*j).toFixed(2):""});document.getElementById("d").addEventListener("input",q=>{const r=parseFloat(q.target.value);document.getElementById("c").value=!isNaN(r)&&j?(r/j).toFixed(8):""});k();setInterval(k,6e4);
+    const s=document.getElementById("f").getContext("2d"),t=15,u=document.getElementById("f").width/t;let v,w,x,y=0,z;function A(){v=Array(t).fill().map(()=>Array(t).fill(1));const B=[[0,0]];v[0][0]=0;while(B.length){const[C,D]=B[B.length-1],E=[];if(C>1&&v[D][C-2]===1)E.push([-2,0]);if(C<t-2&&v[D][C+2]===1)E.push([2,0]);if(D>1&&v[D-2][C]===1)E.push([0,-2]);if(D<t-2&&v[D+2][C]===1)E.push([0,2]);if(E.length){const[F,G]=E[Math.floor(Math.random()*E.length)];v[D+G/2][C+F/2]=0;v[D+G][C+F]=0;B.push([C+F,D+G])}else B.pop()}}function H(){s.clearRect(0,0,300,300);for(let I=0;I<t;I++)for(let J=0;J<t;J++)if(v[I][J]===1)s.fillStyle="#000",s.fillRect(J*u,I*u,u,u);s.fillStyle="#f7931a",s.fillRect(w.x*u,w.y*u,u,u);s.fillStyle="#33cc33",s.fillRect(x.x*u,x.y*u,u,u)}function K(){A();w={x:0,y:0};x={x:t-1,y:t-1};H();L()}function L(){y=0;clearInterval(z);z=setInterval(()=>{y++;document.getElementById("e").innerText=`Updating: ${y}`;if(y>=60){clearInterval(z);K()}},1e3)}document.addEventListener("keydown",M=>{if(M.key.startsWith("Arrow")){const N={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}},O=N[M.key];if(O){const P=w.x+O.x,Q=w.y+O.y;if(P>=0&&P<t&&Q>=0&&Q<t&&v[Q][P]===0){w.x=P;w.y=Q;H();if(P===x.x&&Q===x.y){clearInterval(z);R()}}}}});const g=document.getElementById("g"),h=document.getElementById("h"),i=document.getElementById("i");let S,T;function R(){g.style.display="block";document.getElementById("f").style.display="none";U()}function U(){S=Array.from({length:9},()=>Array(9).fill(0));T=Array.from({length:9},()=>Array(9).fill(0));function V(W,X,Y,Z){for(let $=0;$<9;$++){if(Z[X][$]===W||Z[$][Y]===W)return!1;const _=3*Math.floor(X/3)+Math.floor($/3),aa=3*Math.floor(Y/3)+$%3;if(Z[_][aa]===W)return!1}return!0}function bb(Z){for(let cc=0;cc<9;cc++)for(let dd=0;dd<9;dd++)if(Z[cc][dd]===0)for(let ee=1;ee<=9;ee++)if(V(ee,cc,dd,Z)){Z[cc][dd]=ee;if(bb(Z))return!0;Z[cc][dd]=0;return!1}return!0}bb(T);const ff=Array.from({length:81},(_,gg)=>gg);for(let hh=0;hh<30;hh++){const ii=ff.splice(Math.floor(Math.random()*ff.length),1)[0],jj=Math.floor(ii/9),kk=ii%9;S[jj][kk]=T[jj][kk]}cc(S)}function cc(ll){h.innerHTML="";ll.forEach((mm,nn)=>{const oo=document.createElement("tr");mm.forEach(pp=>{const qq=document.createElement("td");qq.textContent=pp===0?"":pp;oo.appendChild(qq)});h.appendChild(oo)})}i.addEventListener("click",()=>cc(T));K();
   </script>
 </body>
 </html>
