@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bitcoin Converter and Maze Game</title>
+  <title>Bitcoin Converter and Maze-Sudoku Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 20px;
-      background-color: #ffffff; /* Pure white background */
+      background-color: #ffffff;
     }
     h1 {
       color: #f7931a;
@@ -46,12 +46,13 @@
     .sudoku-container table {
       margin: 0 auto;
       border-collapse: collapse;
+      table-layout: fixed;
     }
     .sudoku-container td {
       width: 33px;
       height: 33px;
       text-align: center;
-      font-size: 1rem;
+      font-size: 1.5rem;
       border: 1px solid #333;
     }
     .sudoku-container button {
@@ -60,14 +61,14 @@
       padding: 8px 15px;
     }
     #timer {
-      font-size: 1.5rem;
-      margin-top: 20px;
+      font-size: 2rem;
+      margin-top: 10px;
       color: #333;
     }
   </style>
 </head>
 <body>
-  <!-- Part 1: Bitcoin and USD Conversion -->
+  <!-- Part 1: Bitcoin and USD Converter -->
   <div>
     <h1>Bitcoin and USD Converter</h1>
     <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
@@ -90,27 +91,23 @@
         style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
       />
     </div>
-
-    <div id="priceUpdateTimer" style="font-size: 1.5rem; margin-top: 20px; color: #333;">
-      Price updates every 1 minute
-    </div>
   </div>
 
   <!-- Part 2: Maze Game and Sudoku Integration -->
-  <div id="timer" style="font-size: 1.5rem; margin-top: 20px;">Elapsed Time: 0 seconds</div>
+  <div id="timer" style="font-size: 1.5rem; margin-top: 20px;">Price updates every 1 minute</div>
   <div class="challenge-container">
     <canvas id="mazeCanvas" width="300" height="300"></canvas>
 
     <!-- Sudoku Container -->
     <div id="sudokuContainer" class="sudoku-container">
       <h2>Solve This Sudoku!</h2>
-      <table id="sudokuTable"></table>
+      <table id="sudokuTable" style="width: 300px; height: 300px;"></table>
       <button id="solveSudokuBtn">Solve</button>
     </div>
   </div>
 
   <script>
-    // Part 1: Bitcoin and USD Conversion
+    // Part 1: Bitcoin and USD Converter
     let btcToUsdPrice = null;
 
     async function fetchBitcoinPrice() {
@@ -216,7 +213,7 @@
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         elapsedTime++;
-        document.getElementById('timer').innerText = `Elapsed Time: ${elapsedTime} seconds`;
+        document.getElementById('timer').innerText = `Price updates every 1 minute`;
 
         if (elapsedTime >= 60) {
           resetGame();
@@ -226,7 +223,7 @@
 
     function resetGame() {
       clearInterval(timerInterval);
-      document.getElementById('sudokuContainer').style.display = 'none';
+      sudokuContainer.style.display = 'none';
       mazeCanvas.style.display = 'block';
       initializeMaze();
     }
@@ -270,17 +267,52 @@
     function showSudoku() {
       mazeCanvas.style.display = 'none';
       sudokuContainer.style.display = 'block';
-      generateRandomSudoku();
+      generateSudoku();
     }
 
-    function generateRandomSudoku() {
-      sudokuPuzzle = Array.from({ length: 9 }, () =>
-        Array.from({ length: 9 }, () => (Math.random() > 0.6 ? Math.floor(Math.random() * 9) + 1 : 0))
-      );
-      sudokuSolution = sudokuPuzzle.map((row) =>
-        row.map((cell) => (cell === 0 ? Math.floor(Math.random() * 9) + 1 : cell))
-      );
+    function generateSudoku() {
+      sudokuPuzzle = Array(9)
+        .fill(null)
+        .map(() => Array(9).fill(0));
+
+      sudokuSolution = JSON.parse(JSON.stringify(sudokuPuzzle));
+
+      for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+          let num = Math.floor(Math.random() * 9) + 1;
+          let attempts = 0;
+          while (!isValid(num, i, j) && attempts < 10) {
+            num = Math.floor(Math.random() * 9) + 1;
+            attempts++;
+          }
+          if (isValid(num, i, j)) {
+            sudokuPuzzle[i][j] = Math.random() > 0.5 ? num : 0;
+            sudokuSolution[i][j] = num;
+          }
+        }
+      }
+
       renderSudoku();
+    }
+
+    function isValid(num, row, col) {
+      for (let k = 0; k < 9; k++) {
+        if (sudokuSolution[row][k] === num || sudokuSolution[k][col] === num) {
+          return false;
+        }
+      }
+
+      const startRow = Math.floor(row / 3) * 3;
+      const startCol = Math.floor(col / 3) * 3;
+      for (let r = startRow; r < startRow + 3; r++) {
+        for (let c = startCol; c < startCol + 3; c++) {
+          if (sudokuSolution[r][c] === num) {
+            return false;
+          }
+        }
+      }
+
+      return true;
     }
 
     function renderSudoku() {
