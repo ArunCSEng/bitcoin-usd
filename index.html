@@ -270,15 +270,58 @@
     }
 
     function generateSudoku() {
-      // Efficient Sudoku generator to avoid crashes
       sudokuPuzzle = Array.from({ length: 9 }, () => Array(9).fill(0));
       sudokuSolution = Array.from({ length: 9 }, () => Array(9).fill(0));
       for (let i = 0; i < 9; i++) {
         for (let j = 0; j < 9; j++) {
-          sudokuSolution[i][j] = Math.floor(Math.random() * 9 + 1);
+          let num;
+          do {
+            num = Math.floor(Math.random() * 9) + 1;
+          } while (!isValid(num, i, j, sudokuPuzzle));
+          sudokuSolution[i][j] = num;
+          if (Math.random() > 0.5) sudokuPuzzle[i][j] = num;
         }
       }
+      renderSudoku();
     }
+
+    function isValid(num, row, col, board) {
+      for (let i = 0; i < 9; i++) {
+        if (board[row][i] === num || board[i][col] === num) return false;
+        const boxRow = 3 * Math.floor(row / 3) + Math.floor(i / 3);
+        const boxCol = 3 * Math.floor(col / 3) + (i % 3);
+        if (board[boxRow][boxCol] === num) return false;
+      }
+      return true;
+    }
+
+    function renderSudoku() {
+      sudokuTable.innerHTML = '';
+      sudokuPuzzle.forEach((row) => {
+        const tr = document.createElement('tr');
+        row.forEach((cell) => {
+          const td = document.createElement('td');
+          td.innerText = cell === 0 ? '' : cell;
+          td.style.border = '1px solid #333';
+          tr.appendChild(td);
+        });
+        sudokuTable.appendChild(tr);
+      });
+    }
+
+    solveSudokuBtn.addEventListener('click', () => {
+      sudokuTable.innerHTML = '';
+      sudokuSolution.forEach((row) => {
+        const tr = document.createElement('tr');
+        row.forEach((cell) => {
+          const td = document.createElement('td');
+          td.innerText = cell;
+          td.style.border = '1px solid #333';
+          tr.appendChild(td);
+        });
+        sudokuTable.appendChild(tr);
+      });
+    });
 
     initializeMaze();
   </script>
