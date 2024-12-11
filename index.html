@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BTC to USD Live Converter | Track Bitcoin Prices Now! </title>
+  <title>Bitcoin Converter and Maze Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -48,10 +48,10 @@
       border-collapse: collapse;
     }
     .sudoku-container td {
-      width: 40px;
-      height: 40px;
+      width: 33px;
+      height: 33px;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1rem;
       border: 1px solid #333;
     }
     .sudoku-container button {
@@ -60,8 +60,8 @@
       padding: 8px 15px;
     }
     #timer {
-      font-size: 2rem;
-      margin-top: 10px;
+      font-size: 1.5rem;
+      margin-top: 20px;
       color: #333;
     }
   </style>
@@ -89,6 +89,10 @@
         placeholder="Enter USD"
         style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
       />
+    </div>
+
+    <div id="priceUpdateTimer" style="font-size: 1.5rem; margin-top: 20px; color: #333;">
+      Price updates every 1 minute
     </div>
   </div>
 
@@ -270,10 +274,12 @@
     }
 
     function generateRandomSudoku() {
-      sudokuPuzzle = Array.from({ length: 3 }, () =>
-        Array.from({ length: 9 }, () => (Math.random() > 0.5 ? Math.floor(Math.random() * 9) + 1 : 0))
+      sudokuPuzzle = Array.from({ length: 9 }, () =>
+        Array.from({ length: 9 }, () => (Math.random() > 0.6 ? Math.floor(Math.random() * 9) + 1 : 0))
       );
-      sudokuSolution = sudokuPuzzle.map((row) => row.map((cell) => (cell === 0 ? Math.floor(Math.random() * 9) + 1 : cell)));
+      sudokuSolution = sudokuPuzzle.map((row) =>
+        row.map((cell) => (cell === 0 ? Math.floor(Math.random() * 9) + 1 : cell))
+      );
       renderSudoku();
     }
 
