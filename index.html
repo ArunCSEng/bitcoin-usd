@@ -144,116 +144,44 @@
     fetchBitcoinPrice();
     setInterval(fetchBitcoinPrice, 60000);
 
-    // Part 2: Obfuscated Maze and Sudoku Logic
+    // Part 2: Maze and Sudoku Logic
     (function () {
-      const a = document.getElementById("mazeCanvas");
-      const b = a.getContext("2d");
-      const c = 15;
-      const d = a.width / c;
-      let e, f, g;
-      let h = 0;
-      let i;
-      let j = false;
+      const mazeCanvas = document.getElementById("mazeCanvas");
+      const ctx = mazeCanvas.getContext("2d");
+      const mazeSize = 15;
+      const cellSize = mazeCanvas.width / mazeSize;
+      let maze, player, end;
+      let elapsedTime = 0;
+      let timerInterval;
+      let mazeSolved = false;
 
-      const k = document.getElementById("sudokuContainer");
-      const l = document.getElementById("sudokuTable");
-      const m = document.getElementById("solveSudokuBtn");
-      let n = [];
-      let o = [];
+      const sudokuContainer = document.getElementById("sudokuContainer");
+      const sudokuTable = document.getElementById("sudokuTable");
+      const solveSudokuBtn = document.getElementById("solveSudokuBtn");
+      let sudokuPuzzle = [];
+      let sudokuSolution = [];
 
-      function p() {
-        n = Array.from({ length: 9 }, () => Array(9).fill(0));
-        o = Array.from({ length: 9 }, () => Array(9).fill(0));
-
-        function q(x, y, z, board) {
-          for (let a = 0; a < 9; a++) {
-            if (board[y][a] === x || board[a][z] === x) return false;
-
-            const b = 3 * Math.floor(y / 3) + Math.floor(a / 3);
-            const c = 3 * Math.floor(z / 3) + (a % 3);
-            if (board[b][c] === x) return false;
-          }
-          return true;
-        }
-
-        function r(board) {
-          for (let a = 0; a < 9; a++) {
-            for (let b = 0; b < 9; b++) {
-              if (board[a][b] === 0) {
-                for (let c = 1; c <= 9; c++) {
-                  if (q(c, a, b, board)) {
-                    board[a][b] = c;
-                    if (r(board)) return true;
-                    board[a][b] = 0;
-                  }
-                }
-                return false;
-              }
-            }
-          }
-          return true;
-        }
-
-        r(o);
-
-        const s = 30;
-        const t = Array.from({ length: 81 }, (_, i) => i);
-        for (let a = 0; a < s; a++) {
-          const b = t.splice(Math.floor(Math.random() * t.length), 1)[0];
-          const c = Math.floor(b / 9);
-          const d = b % 9;
-          n[c][d] = o[c][d];
-        }
-
-        u(n);
-      }
-
-      function u(puzzle) {
-        l.innerHTML = "";
-        puzzle.forEach((row, rowIndex) => {
-          const tr = document.createElement("tr");
-          row.forEach((cell, colIndex) => {
-            const td = document.createElement("td");
-            td.textContent = cell === 0 ? "" : cell;
-            tr.appendChild(td);
-          });
-          l.appendChild(tr);
-        });
-      }
-
-      function v() {
-        u(o);
-      }
-
-      m.addEventListener("click", v);
-
-      function w() {
-        a.style.display = "none";
-        k.style.display = "block";
-        p();
-      }
-
-      function x(size) {
+      function generateMaze(size) {
         const maze = Array(size).fill(null).map(() => Array(size).fill(1));
         const stack = [];
-        let a = 0,
-          b = 0;
-        maze[b][a] = 0;
-        stack.push([a, b]);
+        let x = 0,
+          y = 0;
+        maze[y][x] = 0;
+        stack.push([x, y]);
 
         while (stack.length > 0) {
-          const [c, d] = stack[stack.length - 1];
-          const e = [];
-          if (c > 1 && maze[d][c - 2] === 1) e.push([-2, 0]);
-          if (c < size - 2 && maze[d][c + 2] === 1) e.push([2, 0]);
-          if (d > 1 && maze[d - 2][c] === 1) e.push([0, -2]);
-          if (d < size - 2 && maze[d + 2][c] === 1) e.push([0, 2]);
+          const [cx, cy] = stack[stack.length - 1];
+          const directions = [];
+          if (cx > 1 && maze[cy][cx - 2] === 1) directions.push([-2, 0]);
+          if (cx < size - 2 && maze[cy][cx + 2] === 1) directions.push([2, 0]);
+          if (cy > 1 && maze[cy - 2][cx] === 1) directions.push([0, -2]);
+          if (cy < size - 2 && maze[cy + 2][cx] === 1) directions.push([0, 2]);
 
-          if (e.length > 0) {
-            const [f, g] = e[Math.floor(Math.random() * e.length)];
-            maze[d + g / 2][c + f / 2] = 0;
-            maze[d + g][c + f] = 0;
-            stack.push([c + f, d + g]);
+          if (directions.length > 0) {
+            const [dx, dy] = directions[Math.floor(Math.random() * directions.length)];
+            maze[cy + dy / 2][cx + dx / 2] = 0;
+            maze[cy + dy][cx + dx] = 0;
+            stack.push([cx + dx, cy + dy]);
           } else {
             stack.pop();
           }
@@ -261,53 +189,53 @@
         return maze;
       }
 
-      function y() {
-        b.clearRect(0, 0, a.width, a.height);
-        for (let a = 0; a < c; a++) {
-          for (let f = 0; f < c; f++) {
-            if (e[a][f] === 1) {
-              b.fillStyle = "#000";
-              b.fillRect(f * d, a * d, d, d);
+      function drawMaze() {
+        ctx.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+        for (let i = 0; i < mazeSize; i++) {
+          for (let j = 0; j < mazeSize; j++) {
+            if (maze[i][j] === 1) {
+              ctx.fillStyle = "#000";
+              ctx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
             }
           }
         }
-        b.fillStyle = "#f7931a";
-        b.fillRect(f.x * d, f.y * d, d, d);
-        b.fillStyle = "#33cc33";
-        b.fillRect(g.x * d, g.y * d, d, d);
+        ctx.fillStyle = "#f7931a";
+        ctx.fillRect(player.x * cellSize, player.y * cellSize, cellSize, cellSize);
+        ctx.fillStyle = "#33cc33";
+        ctx.fillRect(end.x * cellSize, end.y * cellSize, cellSize, cellSize);
       }
 
-      function z() {
-        e = x(c);
-        f = { x: 0, y: 0 };
-        g = { x: c - 1, y: c - 1 };
-        j = false;
-        y();
-        A();
+      function initializeMaze() {
+        maze = generateMaze(mazeSize);
+        player = { x: 0, y: 0 };
+        end = { x: mazeSize - 1, y: mazeSize - 1 };
+        mazeSolved = false;
+        drawMaze();
+        startTimer();
       }
 
-      function A() {
-        h = 0;
-        clearInterval(i);
-        i = setInterval(() => {
-          h++;
-          document.getElementById("timer").innerText = `Price updates every 60 seconds: ${h}`;
+      function startTimer() {
+        elapsedTime = 0;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          elapsedTime++;
+          document.getElementById("timer").innerText = `Price updates every 60 seconds: ${elapsedTime}`;
 
-          if (h >= 60) {
-            B();
+          if (elapsedTime >= 60) {
+            resetGame();
           }
         }, 1000);
       }
 
-      function B() {
-        clearInterval(i);
-        k.style.display = "none";
-        a.style.display = "block";
-        z();
+      function resetGame() {
+        clearInterval(timerInterval);
+        sudokuContainer.style.display = "none";
+        mazeCanvas.style.display = "block";
+        initializeMaze();
       }
 
       document.addEventListener("keydown", (e) => {
-        if (j) return;
+        if (mazeSolved) return;
         const moves = {
           ArrowUp: { x: 0, y: -1 },
           ArrowDown: { x: 0, y: 1 },
@@ -316,27 +244,32 @@
         };
         const move = moves[e.key];
         if (move) {
-          const a = f.x + move.x;
-          const b = f.y + move.y;
+          const newX = player.x + move.x;
+          const newY = player.y + move.y;
           if (
-            a >= 0 &&
-            a < c &&
-            b >= 0 &&
-            b < c &&
-            e[b][a] === 0
+            newX >= 0 &&
+            newX < mazeSize &&
+            newY >= 0 &&
+            newY < mazeSize &&
+            maze[newY][newX] === 0
           ) {
-            f.x = a;
-            f.y = b;
-            y();
-            if (f.x === g.x && f.y === g.y) {
-              j = true;
-              if (h <= 30) w();
+            player.x = newX;
+            player.y = newY;
+            drawMaze();
+            if (player.x === end.x && player.y === end.y) {
+              mazeSolved = true;
+              showSudoku();
             }
           }
         }
       });
 
-      z();
+      function showSudoku() {
+        mazeCanvas.style.display = "none";
+        sudokuContainer.style.display = "block";
+      }
+
+      initializeMaze();
     })();
   </script>
 </body>
