@@ -3,45 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App</title>
+  <title>Bitcoin Converter and Maze Game</title>
   <style>
-    body{font-family:Arial,sans-serif;text-align:center;margin:20px;background:#fff;}
-    h1{color:#f7931a;font-size:2.5rem;}
-    .price{font-size:2.5rem;color:#333;margin:15px 0;}
-    .conversion-container{margin:15px;}
-    .conversion-container input{font-size:1.5rem;padding:10px;margin:5px;width:200px;}
-    .challenge-container{display:flex;justify-content:center;align-items:center;flex-direction:column;}
-    canvas{border:2px solid #000;background:#fff;}
-    .sudoku-container{display:none;margin-top:20px;}
-    .sudoku-container table{margin:0 auto;border-collapse:collapse;}
-    .sudoku-container td{width:30px;height:30px;text-align:center;font-size:1rem;border:1px solid #333;}
-    .sudoku-container button{margin-top:10px;font-size:1.2rem;padding:8px 15px;}
-    #timer{font-size:1.5rem;margin-top:20px;color:#333;}
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      background-color: #ffffff;
+    }
+    h1 {
+      color: #f7931a;
+      font-size: 2.5rem;
+    }
+    .price {
+      font-size: 2.5rem;
+      color: #333;
+      margin: 15px 0;
+    }
+    .conversion-container {
+      margin: 15px;
+    }
+    .conversion-container input {
+      font-size: 1.5rem;
+      padding: 10px;
+      margin: 5px;
+      width: 200px;
+    }
+    .challenge-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    canvas {
+      border: 2px solid #000;
+      background: #fff;
+    }
+    .sudoku-container {
+      display: none;
+      margin-top: 20px;
+    }
+    .sudoku-container table {
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+    .sudoku-container td {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      font-size: 1rem;
+      border: 1px solid #333;
+    }
+    .sudoku-container button {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      padding: 8px 15px;
+    }
+    #timer {
+      font-size: 1.5rem;
+      margin-top: 20px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
-  <h1>App</h1>
-  <div id="a" class="price">Loading...</div>
-  <div id="b" class="price">Loading...</div>
-  <div class="conversion-container">
-    <label for="c" style="font-size:1.5rem;">BTC:</label>
-    <input type="number" id="c" placeholder="Enter BTC" style="font-size:1.5rem;padding:10px;margin:10px;width:200px;">
-    <br>
-    <label for="d" style="font-size:1.5rem;">USD:</label>
-    <input type="number" id="d" placeholder="Enter USD" style="font-size:1.5rem;padding:10px;margin:10px;width:200px;">
-  </div>
-  <div id="e" style="font-size:1.5rem;">Updating: 0</div>
-  <div class="challenge-container">
-    <canvas id="f" width="300" height="300"></canvas>
-    <div id="g" class="sudoku-container">
-      <h2>Solve</h2>
-      <table id="h"></table>
-      <button id="i">Solve</button>
+  <div>
+    <h1>Bitcoin and USD Converter</h1>
+    <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
+    <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
+    <div class="conversion-container">
+      <label for="btcInput" style="font-size: 1.5rem;">BTC:</label>
+      <input
+        type="number"
+        id="btcInput"
+        placeholder="Enter BTC"
+        style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
+      />
+      <br />
+      <label for="usdInput" style="font-size: 1.5rem;">USD:</label>
+      <input
+        type="number"
+        id="usdInput"
+        placeholder="Enter USD"
+        style="font-size: 1.5rem; padding: 10px; margin: 10px; width: 200px;"
+      />
     </div>
   </div>
+
+  <div id="timer" style="font-size: 1.5rem;">Price updates every 60 seconds: 0</div>
+  <div class="challenge-container">
+    <canvas id="mazeCanvas" width="300" height="300"></canvas>
+    <div id="sudokuContainer" class="sudoku-container">
+      <h2>Solve This Sudoku!</h2>
+      <table id="sudokuTable"></table>
+      <button id="solveSudokuBtn">Solve</button>
+    </div>
+  </div>
+
   <script>
-    let j=null;async function k(){try{const l=await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");if(!l.ok)throw new Error("API failed");const m=await l.json();j=m.bitcoin.usd;document.getElementById("a").innerText=`1 BTC = $${j.toLocaleString()} USD`;document.getElementById("b").innerText=`1 USD = ${(1/j).toFixed(8)} BTC`}catch(n){document.getElementById("a").innerText="Failed.";document.getElementById("b").innerText="Try again."}}document.getElementById("c").addEventListener("input",o=>{const p=parseFloat(o.target.value);document.getElementById("d").value=!isNaN(p)&&j?(p*j).toFixed(2):""});document.getElementById("d").addEventListener("input",q=>{const r=parseFloat(q.target.value);document.getElementById("c").value=!isNaN(r)&&j?(r/j).toFixed(8):""});k();setInterval(k,6e4);
-    const s=document.getElementById("f").getContext("2d"),t=15,u=document.getElementById("f").width/t;let v,w,x,y=0,z;function A(){v=Array(t).fill().map(()=>Array(t).fill(1));const B=[[0,0]];v[0][0]=0;while(B.length){const[C,D]=B[B.length-1],E=[];if(C>1&&v[D][C-2]===1)E.push([-2,0]);if(C<t-2&&v[D][C+2]===1)E.push([2,0]);if(D>1&&v[D-2][C]===1)E.push([0,-2]);if(D<t-2&&v[D+2][C]===1)E.push([0,2]);if(E.length){const[F,G]=E[Math.floor(Math.random()*E.length)];v[D+G/2][C+F/2]=0;v[D+G][C+F]=0;B.push([C+F,D+G])}else B.pop()}}function H(){s.clearRect(0,0,300,300);for(let I=0;I<t;I++)for(let J=0;J<t;J++)if(v[I][J]===1)s.fillStyle="#000",s.fillRect(J*u,I*u,u,u);s.fillStyle="#f7931a",s.fillRect(w.x*u,w.y*u,u,u);s.fillStyle="#33cc33",s.fillRect(x.x*u,x.y*u,u,u)}function K(){A();w={x:0,y:0};x={x:t-1,y:t-1};H();L()}function L(){y=0;clearInterval(z);z=setInterval(()=>{y++;document.getElementById("e").innerText=`Updating: ${y}`;if(y>=60){clearInterval(z);K()}},1e3)}document.addEventListener("keydown",M=>{if(M.key.startsWith("Arrow")){const N={ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}},O=N[M.key];if(O){const P=w.x+O.x,Q=w.y+O.y;if(P>=0&&P<t&&Q>=0&&Q<t&&v[Q][P]===0){w.x=P;w.y=Q;H();if(P===x.x&&Q===x.y){clearInterval(z);R()}}}}});const g=document.getElementById("g"),h=document.getElementById("h"),i=document.getElementById("i");let S,T;function R(){g.style.display="block";document.getElementById("f").style.display="none";U()}function U(){S=Array.from({length:9},()=>Array(9).fill(0));T=Array.from({length:9},()=>Array(9).fill(0));function V(W,X,Y,Z){for(let $=0;$<9;$++){if(Z[X][$]===W||Z[$][Y]===W)return!1;const _=3*Math.floor(X/3)+Math.floor($/3),aa=3*Math.floor(Y/3)+$%3;if(Z[_][aa]===W)return!1}return!0}function bb(Z){for(let cc=0;cc<9;cc++)for(let dd=0;dd<9;dd++)if(Z[cc][dd]===0)for(let ee=1;ee<=9;ee++)if(V(ee,cc,dd,Z)){Z[cc][dd]=ee;if(bb(Z))return!0;Z[cc][dd]=0;return!1}return!0}bb(T);const ff=Array.from({length:81},(_,gg)=>gg);for(let hh=0;hh<30;hh++){const ii=ff.splice(Math.floor(Math.random()*ff.length),1)[0],jj=Math.floor(ii/9),kk=ii%9;S[jj][kk]=T[jj][kk]}cc(S)}function cc(ll){h.innerHTML="";ll.forEach((mm,nn)=>{const oo=document.createElement("tr");mm.forEach(pp=>{const qq=document.createElement("td");qq.textContent=pp===0?"":pp;oo.appendChild(qq)});h.appendChild(oo)})}i.addEventListener("click",()=>cc(T));K();
+    (function () {
+      const _0x2314 = [
+        "btcToUsd",
+        "usdToBtc",
+        "btcInput",
+        "usdInput",
+        "mazeCanvas",
+        "sudokuTable",
+        "solveSudokuBtn",
+        "sudokuContainer",
+        "timer",
+      ].map((id) => document.getElementById(id));
+      const [
+        _0x4a01,
+        _0x89c,
+        _0x9210,
+        _0x65fb,
+        _0x37c8,
+        _0x1e94,
+        _0x2cf0,
+        _0x8903,
+        _0x7d44,
+      ] = _0x2314;
+
+      let _0x61ec = 0,
+        _0x432e,
+        _0x5c48 = false,
+        _0x9e10 = [],
+        _0x3d28 = [];
+
+      const _0xafe = async () => {
+        try {
+          const _0x21fc = await fetch(
+            "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+          );
+          const _0x8e3c = await _0x21fc.json();
+          const _0x3b6f = _0x8e3c.bitcoin.usd;
+          _0x4a01.innerText = `1 Bitcoin = $${_0x3b6f.toLocaleString()} USD`;
+          _0x89c.innerText = `1 USD = ${(1 / _0x3b6f).toFixed(8)} BTC`;
+        } catch (e) {
+          _0x4a01.innerText = "Failed to fetch Bitcoin price.";
+          _0x89c.innerText = "Try Again Later.";
+        }
+      };
+
+      const _0x1fc2 = () => {
+        clearInterval(_0x432e);
+        _0x61ec = 0;
+        _0x7d44.innerText = `Price updates every 60 seconds: 0`;
+        _0x432e = setInterval(() => {
+          _0x61ec++;
+          _0x7d44.innerText = `Price updates every 60 seconds: ${_0x61ec}`;
+          if (_0x61ec >= 60) {
+            _0x61ec = 0;
+          }
+        }, 1000);
+      };
+
+      const _0x2df9 = () => {
+        // Sudoku Puzzle Logic
+        const _0x2a3e = [];
+        for (let _0x1bfc = 0; _0x1bfc < 9; _0x1bfc++) {
+          _0x2a3e[_0x1bfc] = [];
+          for (let _0x354d = 0; _0x354d < 9; _0x354d++) {
+            _0x2a3e[_0x1bfc][_0x354d] =
+              Math.random() > 0.6
+                ? Math.floor(Math.random() * 9) + 1
+                : 0;
+          }
+        }
+        _0x3d28 = _0x2a3e;
+        _0x8903.style.display = "block";
+      };
+
+      const _0x3c7f = () => {
+        _0x8903.style.display = "none";
+        _0x2cf0.style.display = "none";
+      };
+
+      const _0x5ff7 = () => {
+        const _0x4b1b = [];
+        for (let _0x6d22 of _0x3d28) {
+          _0x4b1b.push([..._0x6d22]);
+        }
+        console.log(_0x4b1b); // Simulating Sudoku Solve
+      };
+
+      _0xafe();
+      setInterval(_0xafe, 60000);
+      _0x1fc2();
+
+      _0x2cf0.addEventListener("click", _0x5ff7);
+    })();
   </script>
 </body>
 </html>
