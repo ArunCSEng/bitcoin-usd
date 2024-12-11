@@ -1,1 +1,222 @@
-const a=document.getElementById("mazeCanvas"),b=a.getContext("2d"),c=15,d=a.width/c;let e,f,g,h=[],i=[],j=document.getElementById("sudokuTable"),k=document.getElementById("solveSudokuBtn");function l(a){const b=Array(a).fill(null).map(()=>Array(a).fill(1)),c=[];let d=0,e=0;for(b[e][d]=0,c.push([d,e]);c.length;){const[a,d]=c[c.length-1],e=[];a>1&&1===b[d][a-2]&&e.push([-2,0]),a<a-2&&1===b[d][a+2]&&e.push([2,0]),d>1&&1===b[d-2][a]&&e.push([0,-2]),d<d-2&&1===b[d+2][a]&&e.push([0,2]),e.length>0?(()=>{const[f,g]=e[Math.floor(Math.random()*e.length)];b[d+g/2][a+f/2]=0,b[d+g][a+f]=0,c.push([a+f,d+g])})():c.pop()}return b}function m(){b.clearRect(0,0,a.width,a.height);for(let a=0;a<c;a++)for(let e=0;e<c;e++)1===e[a]&&(b.fillStyle="#000",b.fillRect(a*d,e*d,d,d));b.fillStyle="#f7931a",b.fillRect(f.x*d,f.y*d,d,d),b.fillStyle="#33cc33",b.fillRect(g.x*d,g.y*d,d,d)}function n(){e=l(c),f={x:0,y:0},g={x:c-1,y:c-1},m()}function o(){h=Array.from({length:9},()=>Array(9).fill(0)),i=Array.from({length:9},()=>Array(9).fill(0));function a(b,c,d,e){for(let f=0;f<9;f++)if(e[c][f]===b||e[f][d]===b)return!1;const g=3*Math.floor(c/3)+Math.floor(f/3),h=3*Math.floor(d/3)+f%3;return!(e[g][h]===b)}function b(c){for(let d=0;d<9;d++)for(let e=0;e<9;e++)if(0===c[d][e]){for(let f=1;f<=9;f++)if(a(f,d,e,c))return c[d][e]=f,b(c)||!(c[d][e]=0);return!1}return!0}b(i);const c=30,d=Array.from({length:81},(_,a)=>a);for(let a=0;a<c;a++){const b=d.splice(Math.floor(Math.random()*d.length),1)[0],e=Math.floor(b/9),f=b%9;h[e][f]=i[e][f]}}k.addEventListener("click",()=>{j.innerHTML="",i.forEach(a=>{const b=document.createElement("tr");a.forEach(a=>{const c=document.createElement("td");c.textContent=a,b.appendChild(c)}),j.appendChild(b)})});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitcoin Converter and Maze Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      background-color: #ffffff;
+    }
+    h1 {
+      color: #f7931a;
+      font-size: 2.5rem;
+    }
+    .price {
+      font-size: 2.5rem;
+      color: #333;
+      margin: 15px 0;
+    }
+    .conversion-container {
+      margin: 15px;
+    }
+    .conversion-container input {
+      font-size: 1.5rem;
+      padding: 10px;
+      margin: 5px;
+      width: 200px;
+    }
+    .challenge-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    canvas {
+      border: 2px solid #000;
+      background: #fff;
+    }
+    .sudoku-container {
+      display: none;
+      margin-top: 20px;
+    }
+    .sudoku-container table {
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+    .sudoku-container td {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      font-size: 1rem;
+      border: 1px solid #333;
+    }
+    .sudoku-container button {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      padding: 8px 15px;
+    }
+    #timer {
+      font-size: 1.5rem;
+      margin-top: 20px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Bitcoin and USD Converter</h1>
+    <div id="btcToUsd" class="price">Loading 1 BTC to USD...</div>
+    <div id="usdToBtc" class="price">Loading 1 USD to BTC...</div>
+    <div class="conversion-container">
+      <label for="btcInput" style="font-size: 1.5rem;">BTC:</label>
+      <input type="number" id="btcInput" placeholder="Enter BTC" />
+      <br />
+      <label for="usdInput" style="font-size: 1.5rem;">USD:</label>
+      <input type="number" id="usdInput" placeholder="Enter USD" />
+    </div>
+  </div>
+  <div id="timer" style="font-size: 1.5rem;">Price updates every 60 seconds: 0</div>
+  <div class="challenge-container">
+    <canvas id="mazeCanvas" width="300" height="300"></canvas>
+    <div id="sudokuContainer" class="sudoku-container">
+      <h2>Solve This Sudoku!</h2>
+      <table id="sudokuTable"></table>
+      <button id="solveSudokuBtn">Solve</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const q = document.getElementById,
+        J = document,
+        L = setInterval,
+        o = clearInterval,
+        x = Math,
+        k = [],
+        U = [],
+        M = Array.from,
+        p = J.createElement,
+        h = "#f7931a",
+        d = "#33cc33";
+      let A, b, g, P, t, m;
+
+      function u(C) {
+        return C === 0 ? "" : C;
+      }
+
+      function F(C, B, z, G) {
+        for (let y = 0; y < 9; y++) {
+          if (G[B][y] === C || G[y][z] === C) return false;
+          let v = x.floor(B / 3) * 3 + x.floor(y / 3),
+            w = x.floor(z / 3) * 3 + (y % 3);
+          if (G[v][w] === C) return false;
+        }
+        return true;
+      }
+
+      function y(B) {
+        for (let z = 0; z < 9; z++) {
+          for (let A = 0; A < 9; A++) {
+            if (B[z][A] === 0) {
+              for (let C = 1; C <= 9; C++) {
+                if (F(C, z, A, B)) {
+                  B[z][A] = C;
+                  if (y(B)) return true;
+                  B[z][A] = 0;
+                }
+              }
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      function z(B, C) {
+        const E = x.floor(C / 9),
+          D = C % 9;
+        return F(B, E, D, k) && (k[E][D] = B) && y(k);
+      }
+
+      function B() {
+        const C = [];
+        for (let D = 0; D < 9; D++) {
+          C.push(M({ length: 9 }, () => 0));
+        }
+        y(C);
+        return C;
+      }
+
+      function E(C) {
+        J.getElementById("sudokuTable").innerHTML = "";
+        C.forEach((F) => {
+          const D = p.call(J, "tr");
+          F.forEach((z) => {
+            const A = p.call(J, "td");
+            A.textContent = u(z);
+            D.appendChild(A);
+          });
+          J.getElementById("sudokuTable").appendChild(D);
+        });
+      }
+
+      function V() {
+        E(k);
+      }
+
+      function W() {
+        g = setInterval(() => {
+          t++;
+          q.call(J, "timer").innerText = "Price updates every 60 seconds: " + t;
+          if (t >= 60) R();
+        }, 1000);
+      }
+
+      function R() {
+        o.call(J, g);
+        J.getElementById("sudokuContainer").style.display = "none";
+        J.getElementById("mazeCanvas").style.display = "block";
+        S();
+      }
+
+      function T() {
+        m = L(() => {
+          A.clearRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+          o.call(J, g);
+        }, 30000);
+      }
+
+      function S() {
+        P = B();
+        A = mazeCanvas.getContext("2d");
+        k = P;
+        U.length = 0;
+        E(k);
+        T();
+        W();
+      }
+
+      function X() {
+        J.addEventListener("keydown", (y) => {
+          const C = {
+            ArrowUp: { x: 0, y: -1 },
+            ArrowDown: { x: 0, y: 1 },
+            ArrowLeft: { x: -1, y: 0 },
+            ArrowRight: { x: 1, y: 0 },
+          };
+          const A = C[y.key];
+          if (A) {
+            const B = A.x + A.y;
+            if (B === 1) z(k, B) && W();
+          }
+        });
+      }
+
+      X();
+    })();
+  </script>
+</body>
+</html>
