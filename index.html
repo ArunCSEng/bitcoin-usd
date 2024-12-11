@@ -270,57 +270,53 @@
     }
 
     function generateSudoku() {
-      sudokuPuzzle = Array.from({ length: 9 }, () => Array(9).fill(0));
-      sudokuSolution = Array.from({ length: 9 }, () => Array(9).fill(0));
-      for (let i = 0; i < 9; i++) {
-        for (let j = 0; j < 9; j++) {
-          let num;
-          do {
-            num = Math.floor(Math.random() * 9) + 1;
-          } while (!isValid(num, i, j, sudokuPuzzle));
-          sudokuSolution[i][j] = num;
-          if (Math.random() > 0.5) sudokuPuzzle[i][j] = num;
+      const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
+
+      for (let box = 0; box < 9; box++) {
+        fillBox(grid, box);
+      }
+
+      sudokuPuzzle = grid.map(row => row.slice());
+      sudokuSolution = grid.map(row => row.slice());
+      renderSudoku(sudokuPuzzle);
+    }
+
+    function fillBox(grid, boxIndex) {
+      const startRow = Math.floor(boxIndex / 3) * 3;
+      const startCol = (boxIndex % 3) * 3;
+      const nums = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+      let idx = 0;
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          grid[startRow + i][startCol + j] = nums[idx++];
         }
       }
-      renderSudoku();
     }
 
-    function isValid(num, row, col, board) {
-      for (let i = 0; i < 9; i++) {
-        if (board[row][i] === num || board[i][col] === num) return false;
-        const boxRow = 3 * Math.floor(row / 3) + Math.floor(i / 3);
-        const boxCol = 3 * Math.floor(col / 3) + (i % 3);
-        if (board[boxRow][boxCol] === num) return false;
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
       }
-      return true;
+      return array;
     }
 
-    function renderSudoku() {
-      sudokuTable.innerHTML = '';
-      sudokuPuzzle.forEach((row) => {
-        const tr = document.createElement('tr');
-        row.forEach((cell) => {
-          const td = document.createElement('td');
-          td.innerText = cell === 0 ? '' : cell;
-          td.style.border = '1px solid #333';
+    function renderSudoku(grid) {
+      sudokuTable.innerHTML = "";
+      grid.forEach(row => {
+        const tr = document.createElement("tr");
+        row.forEach(cell => {
+          const td = document.createElement("td");
+          td.textContent = cell === 0 ? "" : cell;
           tr.appendChild(td);
         });
         sudokuTable.appendChild(tr);
       });
     }
 
-    solveSudokuBtn.addEventListener('click', () => {
-      sudokuTable.innerHTML = '';
-      sudokuSolution.forEach((row) => {
-        const tr = document.createElement('tr');
-        row.forEach((cell) => {
-          const td = document.createElement('td');
-          td.innerText = cell;
-          td.style.border = '1px solid #333';
-          tr.appendChild(td);
-        });
-        sudokuTable.appendChild(tr);
-      });
+    solveSudokuBtn.addEventListener("click", () => {
+      renderSudoku(sudokuSolution);
     });
 
     initializeMaze();
